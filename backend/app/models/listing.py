@@ -99,3 +99,13 @@ class ValuationSnapshotModel(Base):
     created_at = Column(DateTime(timezone=True), default=utc_now)
 
     listing = relationship("ListingModel", back_populates="valuation_snapshots")
+
+
+class SavedSearchModel(Base):
+    __tablename__ = "saved_searches"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String(120), nullable=False, index=True)
+    query_params = Column(JSON, nullable=False)
+    target_price_drop_pct = Column(Float, default=5.0)
+    created_at = Column(DateTime(timezone=True), default=utc_now)
