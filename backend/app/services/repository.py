@@ -1,9 +1,10 @@
-"""Database Repository for CarX Listings, Search, and Filtering."""
 from datetime import datetime, timezone
 import math
 from typing import Any, Dict, List, Optional, Tuple
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+
+from backend.app.core.cache import cache
 
 from backend.app.models.listing import (
     ListingModel,
@@ -145,6 +146,19 @@ class ListingRepository:
         page: int = 1,
         page_size: int = 20,
     ) -> ListingSearchResult:
+        # Cache check
+        cache_params = {
+            "make": make, "model": model, "city": city, "fuel": fuel_type,
+            "trans": transmission, "body": body_style, "ymin": year_min,
+            "ymax": year_max, "pmin": price_min, "pmax": price_max,
+            "odo": max_odometer, "own": max_owners, "seller": seller_type,
+            "sort": sort_by, "p": page, "ps": page_size,
+        }
+        cache_key = cache.generate_key("search", cache_params)
+        cached_result = cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+
         query = db.query(ListingModel).filter(ListingModel.listing_status == "active")
 
         if make:
@@ -192,17 +206,23 @@ class ListingRepository:
         results = query.offset(offset).limit(page_size).all()
 
         items = [cls.model_to_schema(r) for r in results]
-        return ListingSearchResult(
+        search_res = ListingSearchResult(
             items=items,
             total=total,
             page=page,
             page_size=page_size,
             total_pages=total_pages,
         )
+        cache.set(cache_key, search_res, ttl_seconds=120)
+        return search_res
 
     @classmethod
     def get_metadata_facets(cls, db: Session) -> Dict[str, Any]:
         """Aggregate unique makes, models, body styles, and cities for frontend filters."""
+        cached_facets = cache.get("meta_facets")
+        if cached_facets is not None:
+            return cached_facets
+
         makes = [m[0] for m in db.query(ListingModel.make).distinct().order_by(ListingModel.make).all() if m[0]]
         cities = [c[0] for c in db.query(ListingModel.city).distinct().order_by(ListingModel.city).all() if c[0]]
         body_styles = [b[0] for b in db.query(ListingModel.body_style).distinct().order_by(ListingModel.body_style).all() if b[0]]
@@ -214,7 +234,7 @@ class ListingRepository:
         min_year = db.query(func.min(ListingModel.year)).scalar() or 2015
         max_year = db.query(func.max(ListingModel.year)).scalar() or 2024
 
-        return {
+        facets = {
             "makes": makes,
             "cities": cities,
             "body_styles": body_styles,
@@ -223,6 +243,8 @@ class ListingRepository:
             "price_range": {"min": min_price, "max": max_price},
             "year_range": {"min": min_year, "max": max_year},
         }
+        cache.set("meta_facets", facets, ttl_seconds=600)
+        return facets
 
     @classmethod
     def seed_sample_data_if_empty(cls, db: Session, sample_path: str = "data/sample/listings_sample.json"):

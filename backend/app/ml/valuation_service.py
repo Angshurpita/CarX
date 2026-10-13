@@ -12,6 +12,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
+from backend.app.core.cache import cache
 from backend.app.core.config import settings
 from backend.app.ml.training import (
     CATEGORICAL_FEATURES,
@@ -76,6 +77,11 @@ class ValuationService:
 
     def estimate(self, req: ValuationRequest) -> ValuationResponse:
         """Estimate statistical fair asking price with prediction intervals."""
+        cache_key = cache.generate_key("val", req.model_dump())
+        cached_val = cache.get(cache_key)
+        if cached_val is not None:
+            return cached_val
+
         current_year = datetime.now().year
         age = max(1, current_year - req.year)
         km_per_year = req.odometer_km / age
@@ -145,7 +151,7 @@ class ValuationService:
             },
         }
 
-        return ValuationResponse(
+        val_response = ValuationResponse(
             estimated_fair_price=final_estimate,
             price_range_low=price_low,
             price_range_high=price_high,
@@ -156,3 +162,5 @@ class ValuationService:
             data_freshness=freshness,
             prediction_provenance=provenance,
         )
+        cache.set(cache_key, val_response, ttl_seconds=3600)
+        return val_response

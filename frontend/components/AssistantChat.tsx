@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChatMessage, sendChatMessage } from "../lib/api";
+import { ChatMessage, streamChatMessage } from "../lib/api";
 
 const SUGGESTED_PROMPTS = [
   "Find a diesel automatic SUV in Delhi under 15 lakh",
@@ -26,26 +26,42 @@ export default function AssistantChat() {
     const text = (textToSend || input).trim();
     if (!text || loading) return;
 
-    const newMessages: ChatMessage[] = [...messages, { role: "user", content: text }];
-    setMessages(newMessages);
+    const userMsg: ChatMessage = { role: "user", content: text };
+    const initialAssistantMsg: ChatMessage = { role: "assistant", content: "" };
+    const newMessages: ChatMessage[] = [...messages, userMsg];
+
+    setMessages([...newMessages, initialAssistantMsg]);
     setInput("");
     setLoading(true);
 
     try {
-      const res = await sendChatMessage(newMessages);
-      setMessages([...newMessages, res.message]);
-      if (res.tool_calls && res.tool_calls.length > 0) {
-        setRecentTools(res.tool_calls);
-      }
-    } catch (err: any) {
-      setMessages([
-        ...newMessages,
+      await streamChatMessage(
+        newMessages,
+        (token) => {
+          setMessages((prev) => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last && last.role === "assistant") {
+              last.content += token;
+            }
+            return [...updated];
+          });
+        },
+        (tool) => {
+          setRecentTools((prev) => [...prev, tool]);
+        },
+        () => {
+          setLoading(false);
+        },
+      );
+    } catch {
+      setMessages((prev) => [
+        ...prev.slice(0, -1),
         {
           role: "assistant",
-          content: "Sorry, I encountered an error connecting to the backend assistant service. Please check that the backend is active.",
+          content: "Sorry, I encountered an error connecting to the assistant service. Please check that the backend is active.",
         },
       ]);
-    } finally {
       setLoading(false);
     }
   };

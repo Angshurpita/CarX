@@ -3,6 +3,7 @@
 Executes server-side validated tools, handles fallback gracefully,
 and prevents hallucinations and prompt injection.
 """
+import asyncio
 from datetime import datetime
 import json
 import logging
@@ -31,6 +32,22 @@ RULES OF ENGAGEMENT:
 
 class AssistantService:
     """Manages conversational interaction with Gemma via OpenRouter and server-side tool execution."""
+
+    @classmethod
+    async def stream_chat(cls, req: ChatRequest, db: Session):
+        """Streams assistant tokens and tools via Server-Sent Events (SSE)."""
+        response = await cls.chat(req, db)
+        if response.tool_calls:
+            for tc in response.tool_calls:
+                yield f"data: {json.dumps({'type': 'tool', 'tool': tc})}\n\n"
+
+        words = response.message.content.split(" ")
+        for i, word in enumerate(words):
+            token = word + (" " if i < len(words) - 1 else "")
+            yield f"data: {json.dumps({'type': 'token', 'token': token})}\n\n"
+            await asyncio.sleep(0.015)
+
+        yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
     @classmethod
     async def chat(cls, req: ChatRequest, db: Session) -> ChatResponse:

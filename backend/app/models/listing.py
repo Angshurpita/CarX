@@ -6,6 +6,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
 )
@@ -31,6 +32,11 @@ class ProviderModel(Base):
 
 class ListingModel(Base):
     __tablename__ = "listings"
+    __table_args__ = (
+        Index("idx_listings_status_city_make", "listing_status", "city", "make", "model"),
+        Index("idx_listings_status_price", "listing_status", "asking_price"),
+        Index("idx_listings_status_year", "listing_status", "year"),
+    )
 
     id = Column(String(120), primary_key=True, index=True)
     provider_id = Column(Integer, ForeignKey("providers.id"), nullable=True)

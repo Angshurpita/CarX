@@ -182,3 +182,51 @@ export async function sendChatMessage(messages: ChatMessage[]): Promise<ChatResp
   if (!res.ok) throw new Error("Assistant response failed");
   return res.json();
 }
+
+export async function streamChatMessage(
+  messages: ChatMessage[],
+  onToken: (token: string) => void,
+  onTool: (tool: any) => void,
+  onDone: () => void,
+): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/assistant/stream`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
+  });
+
+  if (!res.ok || !res.body) {
+    throw new Error("Assistant streaming connection failed");
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        try {
+          const payload = JSON.parse(line.slice(6));
+          if (payload.type === "token") {
+            onToken(payload.token);
+          } else if (payload.type === "tool") {
+            onTool(payload.tool);
+          } else if (payload.type === "done") {
+            onDone();
+          }
+        } catch {
+          // Ignore partial chunk parsing
+        }
+      }
+    }
+  }
+  onDone();
+}
