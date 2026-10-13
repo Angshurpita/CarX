@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # OpenRouter / Gemma LLM
     OPENROUTER_API_KEY: Optional[str] = None
-    OPENROUTER_MODEL: str = "google/gemma-2-9b-it:free"
+    OPENROUTER_MODEL: str = "google/gemma-4-26b-a4b-it:free"
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     OPENROUTER_TIMEOUT_SECONDS: int = 30
     OPENROUTER_MAX_TOKENS: int = 1200
