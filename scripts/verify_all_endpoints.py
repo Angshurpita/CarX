@@ -178,12 +178,15 @@ def main():
         # 11. AI Assistant Streaming SSE
         total += 1
         try:
-            res = client.post(f"{BASE_URL}/api/v1/assistant/stream", json=chat_payload)
-            if res.status_code == 200 and "text/event-stream" in res.headers.get("content-type", ""):
-                print(f"✅ [POST] {'/api/v1/assistant/stream':<36} -> HTTP 200 (SSE Streaming Validated)")
-                passed += 1
-            else:
-                print(f"❌ [POST] {'/api/v1/assistant/stream':<36} -> Failed: HTTP {res.status_code}")
+            with client.stream("POST", f"{BASE_URL}/api/v1/assistant/stream", json=chat_payload, timeout=35.0) as s_res:
+                if s_res.status_code == 200 and "text/event-stream" in s_res.headers.get("content-type", ""):
+                    for line in s_res.iter_lines():
+                        if line:
+                            print(f"✅ [POST] {'/api/v1/assistant/stream':<36} -> HTTP 200 (SSE Streaming Validated)")
+                            passed += 1
+                            break
+                else:
+                    print(f"❌ [POST] {'/api/v1/assistant/stream':<36} -> Failed: HTTP {s_res.status_code}")
         except Exception as e:
             print(f"❌ [POST] /api/v1/assistant/stream -> Exception: {e}")
 

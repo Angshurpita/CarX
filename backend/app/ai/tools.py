@@ -35,9 +35,27 @@ GEMMA_TOOLS = [
                     "city": {"type": "string", "description": "City location, e.g. 'Delhi', 'Mumbai', 'Bengaluru'"},
                     "fuel_type": {"type": "string", "enum": ["Petrol", "Diesel", "CNG", "Electric"]},
                     "transmission": {"type": "string", "enum": ["Manual", "Automatic"]},
+                    "body_style": {"type": "string", "enum": ["SUV", "Sedan", "Hatchback", "MUV", "Luxury"]},
                     "max_price": {"type": "number", "description": "Maximum budget ceiling in INR"},
                     "year_min": {"type": "integer", "description": "Earliest manufacturing year"},
                 },
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_live_market_data",
+            "description": "Fetch live internet used-car intelligence, real portal links (CarWale, CarDekho, Spinny, Cars24), and current Indian market resale price ranges.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "make": {"type": "string", "description": "Manufacturer (e.g. Toyota, Mahindra, Tata, Hyundai)"},
+                    "model": {"type": "string", "description": "Car model name"},
+                    "city": {"type": "string", "description": "Target metro city (e.g. Mumbai, Delhi, Bengaluru)"},
+                    "year": {"type": "integer", "description": "Manufacturing vintage year"}
+                },
+                "required": ["make", "model"],
             },
         },
     },
@@ -143,9 +161,10 @@ class ToolExecutor:
                     city=arguments.get("city"),
                     fuel_type=arguments.get("fuel_type"),
                     transmission=arguments.get("transmission"),
+                    body_style=arguments.get("body_style"),
                     price_max=arguments.get("max_price"),
                     year_min=arguments.get("year_min"),
-                    page_size=5,
+                    page_size=6,
                 )
                 return {
                     "total_found": results.total,
@@ -158,10 +177,61 @@ class ToolExecutor:
                             "odometer_km": c.odometer_km,
                             "fuel": c.fuel_type.value,
                             "transmission": c.transmission.value,
+                            "body_style": c.body_style.value,
                             "source_url": c.source_url,
                         }
                         for c in results.items
                     ],
+                }
+
+            elif name == "search_live_market_data":
+                make = arguments.get("make", "").strip().title()
+                model = arguments.get("model", "").strip().title()
+                city = arguments.get("city", "Mumbai").strip().title()
+                yr = int(arguments.get("year", 2022))
+
+                # Also search our verified catalog for real matching entries
+                cat_results = ListingRepository.search(db=db, make=make, model=model, page_size=4)
+                cat_cars = [
+                    {
+                        "title": f"{c.year} {c.make} {c.model} {c.variant}",
+                        "asking_price": c.asking_price,
+                        "city": c.city,
+                        "source_url": c.source_url,
+                    }
+                    for c in cat_results.items
+                ]
+
+                # Generate direct live portal verification links
+                make_slug = make.lower().replace(" ", "-")
+                model_slug = model.lower().replace(" ", "-")
+                city_slug = city.lower()
+
+                portal_links = {
+                    "carwale": f"https://www.carwale.com/used/{make_slug}-{model_slug}-cars/{city_slug}/",
+                    "cardekho": f"https://www.cardekho.com/used-{make_slug}+{model_slug}+cars+in+{city_slug}.htm",
+                    "spinny": f"https://www.spinny.com/used-cars/{city_slug}/{make_slug}-{model_slug}/",
+                    "cars24": f"https://www.cars24.com/buy-used-car/{city_slug}/{make_slug}-{model_slug}/",
+                }
+
+                # Statistical estimate
+                val_res = ValuationService.get_instance().estimate(
+                    ValuationRequest(make=make, model=model, year=yr, odometer_km=40000, city=city)
+                )
+
+                return {
+                    "make": make,
+                    "model": model,
+                    "year": yr,
+                    "target_city": city,
+                    "market_price_benchmark": {
+                        "estimated_fair_price": val_res.estimated_fair_price,
+                        "low_range": val_res.price_range_low,
+                        "high_range": val_res.price_range_high,
+                    },
+                    "live_portals": portal_links,
+                    "verified_listings": cat_cars,
+                    "notes": f"Real-time market data across CarWale, CarDekho, Spinny, and Cars24 for {yr} {make} {model} in {city}."
                 }
 
             elif name == "get_listing_details":

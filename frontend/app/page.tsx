@@ -94,10 +94,20 @@ export default function Home() {
     else if (q.includes("bengaluru") || q.includes("bangalore")) setSelectedCity("Bengaluru");
     else if (q.includes("kolkata")) setSelectedCity("Kolkata");
 
-    if (q.includes("creta")) { setSelectedMake("Hyundai"); }
-    else if (q.includes("swift")) { setSelectedMake("Maruti Suzuki"); }
-    else if (q.includes("city")) { setSelectedMake("Honda"); }
-    else if (q.includes("bmw") || q.includes("5 series")) { setSelectedMake("BMW"); }
+    if (q.includes("thar") || q.includes("scorpio") || q.includes("xuv") || q.includes("bolero")) { setSelectedMake("Mahindra"); }
+    else if (q.includes("fortuner") || q.includes("innova") || q.includes("hyryder") || q.includes("glanza")) { setSelectedMake("Toyota"); }
+    else if (q.includes("safari") || q.includes("harrier") || q.includes("nexon") || q.includes("punch") || q.includes("altroz") || q.includes("tiago")) { setSelectedMake("Tata"); }
+    else if (q.includes("creta") || q.includes("venue") || q.includes("verna") || q.includes("i20") || q.includes("exter") || q.includes("alcazar")) { setSelectedMake("Hyundai"); }
+    else if (q.includes("seltos") || q.includes("sonet") || q.includes("carens") || q.includes("carnival")) { setSelectedMake("Kia"); }
+    else if (q.includes("swift") || q.includes("baleno") || q.includes("brezza") || q.includes("vitara") || q.includes("fronx") || q.includes("dzire") || q.includes("ertiga")) { setSelectedMake("Maruti Suzuki"); }
+    else if (q.includes("city") || q.includes("elevate") || q.includes("amaze")) { setSelectedMake("Honda"); }
+    else if (q.includes("virtus") || q.includes("taigun") || q.includes("polo")) { setSelectedMake("Volkswagen"); }
+    else if (q.includes("slavia") || q.includes("kushaq") || q.includes("octavia") || q.includes("superb")) { setSelectedMake("Skoda"); }
+    else if (q.includes("hector") || q.includes("astor") || q.includes("zs")) { setSelectedMake("MG"); }
+    else if (q.includes("compass") || q.includes("meridian")) { setSelectedMake("Jeep"); }
+    else if (q.includes("bmw") || q.includes("3 series") || q.includes("5 series") || q.includes("x1")) { setSelectedMake("BMW"); }
+    else if (q.includes("mercedes") || q.includes("c-class") || q.includes("e-class") || q.includes("glc")) { setSelectedMake("Mercedes-Benz"); }
+    else if (q.includes("audi") || q.includes("a4") || q.includes("a6") || q.includes("q3") || q.includes("q5")) { setSelectedMake("Audi"); }
 
     const lakhMatch = q.match(/(\d+)\s*(lakh|lac|l)/);
     if (lakhMatch) {

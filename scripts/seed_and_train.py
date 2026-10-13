@@ -20,7 +20,7 @@ def main():
     db = SessionLocal()
     
     print("📦 Seeding Sample Verified Listings...")
-    ListingRepository.seed_sample_data_if_empty(db, sample_path="data/sample/listings_sample.json")
+    ListingRepository.seed_sample_data(db, sample_path="data/sample/listings_sample.json", force=True)
     db.close()
 
     print("🧠 Training CarX Machine Learning Valuation Models...")

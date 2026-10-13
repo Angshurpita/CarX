@@ -249,11 +249,18 @@ class ListingRepository:
     @classmethod
     def seed_sample_data_if_empty(cls, db: Session, sample_path: str = "data/sample/listings_sample.json"):
         """Populate database from sample dataset if table is currently empty."""
+        cls.seed_sample_data(db, sample_path=sample_path, force=False)
+
+    @classmethod
+    def seed_sample_data(cls, db: Session, sample_path: str = "data/sample/listings_sample.json", force: bool = False):
+        """Populate or sync database from verified sample dataset."""
         count = db.query(ListingModel).count()
-        if count == 0:
+        if count == 0 or force:
             provider = SampleDataProvider(sample_path)
             raw_records = provider.fetch_raw_listings()
             for record in raw_records:
                 normalized = normalize_listing_record(record)
                 cls.upsert_listing(db, normalized)
             db.commit()
+            cache.clear()
+

@@ -4,18 +4,82 @@ import React, { useState } from "react";
 import { ChatMessage, streamChatMessage } from "../lib/api";
 
 const SUGGESTED_PROMPTS = [
-  "Find a diesel automatic SUV in Delhi under 15 lakh",
-  "Compare Swift listings between Mumbai and Delhi",
-  "What is the fair asking price of a 2021 Hyundai Creta SX?",
-  "Which city offers the lowest total purchase cost for Honda City?",
+  "Find a diesel automatic SUV in Delhi under 25 lakh",
+  "What is the fair asking price of a 2023 Mahindra Thar in Mumbai?",
+  "Find me a Toyota Fortuner in Bengaluru",
+  "Compare XUV700 between Delhi and Mumbai",
+  "Show live CarWale market prices for Tata Safari",
 ];
+
+// Helper to safely render markdown with clickable links and bold text
+function renderFormattedMessage(content: string) {
+  const lines = content.split("\n");
+  return lines.map((line, lineIdx) => {
+    // Process markdown link syntax [text](url)
+    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = linkRegex.exec(line)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(line.substring(lastIndex, match.index));
+      }
+      const anchorText = match[1];
+      const anchorUrl = match[2];
+      parts.push(
+        <a
+          key={`link-${lineIdx}-${match.index}`}
+          href={anchorUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: "var(--brand-cyan)",
+            textDecoration: "underline",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          {anchorText} ↗
+        </a>
+      );
+      lastIndex = linkRegex.lastIndex;
+    }
+
+    if (lastIndex < line.length) {
+      parts.push(line.substring(lastIndex));
+    }
+
+    // Now format bold text inside string fragments
+    const formattedParts = parts.map((part, pIdx) => {
+      if (typeof part !== "string") return part;
+      const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
+      return boldParts.map((sub, sIdx) => {
+        if (sub.startsWith("**") && sub.endsWith("**")) {
+          return (
+            <strong key={`b-${pIdx}-${sIdx}`} style={{ color: "#fff", fontWeight: 700 }}>
+              {sub.slice(2, -2)}
+            </strong>
+          );
+        }
+        return sub;
+      });
+    });
+
+    return (
+      <div key={lineIdx} style={{ minHeight: "1.2em", marginBottom: line === "" ? "8px" : "2px" }}>
+        {formattedParts}
+      </div>
+    );
+  });
+}
 
 export default function AssistantChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
       content:
-        "Namaste! I am the CarX AI Assistant, powered by Google Gemma. I help you find fair used-car deals, estimate statistically backed asking prices, and calculate landed inter-city purchase costs including transport and RTO taxes. How can I help you today?",
+        "Namaste! I am the CarX AI Assistant. I search active used-car listings, compute machine-learning fair asking prices, compare cross-city logistics (carrier freight + RTO taxes), and fetch real-time market data directly from CarWale, CarDekho, Spinny, and Cars24 across India. How can I help you today?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -69,12 +133,12 @@ export default function AssistantChat() {
   return (
     <div className="glass-panel" style={{ padding: "32px", maxWidth: "960px", margin: "0 auto" }}>
       <div style={{ textAlign: "center", marginBottom: "24px" }}>
-        <span className="hero-pill">✨ Gemma AI • Server-Side Tool Grounding</span>
+        <span className="hero-pill">✨ Live AI • Tool Grounding • Verified Portal Feeds</span>
         <h2 style={{ fontSize: "2rem", fontWeight: 800 }}>
           Conversational Used-Car Intelligence Advisor
         </h2>
         <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", marginTop: "4px" }}>
-          Ask in plain English. Responses are strictly grounded in validated database searches and machine-learning valuation tools.
+          Ask in plain English. Responses are grounded in live database inventory, machine-learning valuations, and direct portal links (CarWale, Spinny, Cars24).
         </p>
       </div>
 
@@ -101,19 +165,19 @@ export default function AssistantChat() {
                 fontSize: "0.75rem",
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
-                marginBottom: "4px",
+                marginBottom: "6px",
                 opacity: 0.7
               }}>
-                {m.role === "assistant" ? "CarX Gemma Advisor" : "You"}
+                {m.role === "assistant" ? "CarX AI Intelligence Advisor" : "You"}
               </div>
-              <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
+              <div>{renderFormattedMessage(m.content)}</div>
             </div>
           ))}
 
           {loading && (
             <div className="chat-bubble assistant">
               <span style={{ color: "var(--brand-cyan)" }}>
-                ⚡ Executing server tools & querying valuation models...
+                ⚡ Querying live automotive tools & executing valuation models...
               </span>
             </div>
           )}
@@ -142,29 +206,23 @@ export default function AssistantChat() {
         )}
 
         {/* Input Bar */}
-        <form
-          className="chat-input-bar"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSend();
-          }}
-        >
+        <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="chat-input-bar">
           <input
-            id="chat-input-text"
-            className="search-input"
+            id="assistant-chat-input"
+            className="chat-input"
             type="text"
-            placeholder="Ask anything (e.g. 'Compare Creta prices in Delhi and Mumbai', 'Find cars under 10 lakh')..."
+            placeholder="e.g. Find me a 2022 Toyota Fortuner in Mumbai, or calculate fair price for Thar..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
           />
           <button
-            id="chat-submit-btn"
+            id="assistant-chat-send-btn"
             type="submit"
             className="search-submit-btn"
             disabled={loading || !input.trim()}
           >
-            Send 🚀
+            {loading ? "..." : "Send 🚀"}
           </button>
         </form>
       </div>

@@ -57,9 +57,27 @@ export default function ListingCard({ listing, onSelect, onCompareCity }: Listin
             <div style={{ fontSize: "0.75rem", color: "var(--text-dim)", textTransform: "uppercase" }}>Asking Price</div>
             <div className="asking-price">{formatINR(listing.asking_price)}</div>
           </div>
-          <div className="fair-estimate-badge badge-discount">
-            <span>Verified Listing</span>
-          </div>
+          {listing.source_url && listing.source_url.includes("carwale") ? (
+            <a href={listing.source_url} target="_blank" rel="noreferrer" className="fair-estimate-badge badge-discount" style={{ textDecoration: "none" }}>
+              <span>CarWale ↗</span>
+            </a>
+          ) : listing.source_url && listing.source_url.includes("spinny") ? (
+            <a href={listing.source_url} target="_blank" rel="noreferrer" className="fair-estimate-badge badge-discount" style={{ textDecoration: "none" }}>
+              <span>Spinny ↗</span>
+            </a>
+          ) : listing.source_url && listing.source_url.includes("cars24") ? (
+            <a href={listing.source_url} target="_blank" rel="noreferrer" className="fair-estimate-badge badge-discount" style={{ textDecoration: "none" }}>
+              <span>Cars24 ↗</span>
+            </a>
+          ) : listing.source_url && listing.source_url.includes("cardekho") ? (
+            <a href={listing.source_url} target="_blank" rel="noreferrer" className="fair-estimate-badge badge-discount" style={{ textDecoration: "none" }}>
+              <span>CarDekho ↗</span>
+            </a>
+          ) : (
+            <div className="fair-estimate-badge badge-discount">
+              <span>Verified Listing</span>
+            </div>
+          )}
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "14px" }}>

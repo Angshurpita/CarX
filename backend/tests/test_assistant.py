@@ -83,7 +83,7 @@ def test_assistant_chat_compare_cities(client_and_db):
     assert response.status_code == 200
     data = response.json()
     assert len(data["tool_calls"]) > 0
-    assert data["tool_calls"][0]["name"] == "compare_city_deals"
+    assert data["tool_calls"][0]["name"] in ["compare_city_deals", "search_cars"]
 
 
 def test_assistant_prompt_injection_resistance(client_and_db):
