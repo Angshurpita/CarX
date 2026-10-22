@@ -24,12 +24,16 @@ from backend.app.services.repository import ListingRepository
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Ensure tables exist and seed sample data if empty
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
     try:
-        ListingRepository.seed_sample_data_if_empty(db, sample_path=settings.resolved_sample_data_path)
-    finally:
-        db.close()
+        Base.metadata.create_all(bind=engine)
+        db = SessionLocal()
+        try:
+            ListingRepository.seed_sample_data_if_empty(db, sample_path=settings.resolved_sample_data_path)
+        finally:
+            db.close()
+    except Exception as exc:
+        import logging
+        logging.getLogger("carx.main").warning(f"Lifespan initialization notice: {exc}")
     yield
     # Shutdown logic if any
 

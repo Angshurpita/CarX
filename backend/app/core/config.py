@@ -22,13 +22,13 @@ def _resolve_database_url(raw_url: str) -> str:
     is_serverless = os.getenv("VERCEL") == "1" or bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
     if is_serverless and raw_url.startswith("sqlite"):
         tmp_db = Path("/tmp/carx.db")
-        if not tmp_db.exists():
+        if not tmp_db.exists() or tmp_db.stat().st_size == 0:
             for src in [
                 _backend_dir / "carx.db",
                 _project_root / "carx.db",
                 Path("carx.db").resolve(),
             ]:
-                if src.exists():
+                if src.exists() and src.stat().st_size > 0:
                     try:
                         shutil.copy2(src, tmp_db)
                         break
