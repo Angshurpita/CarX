@@ -78,8 +78,10 @@ class Settings(BaseSettings):
     @property
     def resolved_model_path(self) -> str:
         return _resolve_asset_path(
-            self.MODEL_ARTIFACT_PATH,
+            "models/valuation_model_light.json",
             [
+                _backend_dir / "models" / "valuation_model_light.json",
+                _project_root / "models" / "valuation_model_light.json",
                 Path(self.MODEL_ARTIFACT_PATH),
                 _backend_dir / "models" / "valuation_model.joblib",
                 _project_root / "models" / "valuation_model.joblib",
