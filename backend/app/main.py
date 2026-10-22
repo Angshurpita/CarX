@@ -1,4 +1,5 @@
 import sys
+import types
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,6 +11,15 @@ _project_root = _backend_dir.parent
 for _p in [str(_backend_dir), str(_project_root)]:
     if _p not in sys.path:
         sys.path.insert(0, _p)
+
+# When running in a Vercel service where backend/ is the root of the deployment,
+# create a virtual 'backend' package in sys.modules pointing to _backend_dir
+# so that all `from backend.app.*` imports resolve transparently.
+if "backend" not in sys.modules:
+    backend_pkg = types.ModuleType("backend")
+    backend_pkg.__path__ = [str(_backend_dir)]
+    backend_pkg.__file__ = str(_backend_dir / "__init__.py")
+    sys.modules["backend"] = backend_pkg
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -56,6 +66,7 @@ app.add_middleware(
 
 
 @app.get("/health", tags=["system"])
+@app.get("/api/health", tags=["system"])
 @app.get("/api/v1/health", tags=["system"])
 def health_check():
     """Health check endpoint providing status of API and database connection."""

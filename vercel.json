@@ -3,15 +3,7 @@
   "services": {
     "frontend": {
       "root": "frontend/",
-      "framework": "nextjs",
-      "bindings": [
-        {
-          "type": "service",
-          "service": "backend",
-          "format": "url",
-          "env": "BACKEND_URL"
-        }
-      ]
+      "framework": "nextjs"
     },
     "backend": {
       "root": "backend/",
@@ -21,31 +13,44 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": { "service": "backend" }
-    },
-    {
-      "source": "/api",
-      "destination": { "service": "backend" }
+      "destination": {
+        "service": "backend",
+        "path": "/api/$1"
+      }
     },
     {
       "source": "/health",
-      "destination": { "service": "backend" }
+      "destination": {
+        "service": "backend",
+        "path": "/health"
+      }
     },
     {
       "source": "/docs",
-      "destination": { "service": "backend" }
+      "destination": {
+        "service": "backend",
+        "path": "/docs"
+      }
     },
     {
       "source": "/redoc",
-      "destination": { "service": "backend" }
+      "destination": {
+        "service": "backend",
+        "path": "/redoc"
+      }
     },
     {
       "source": "/openapi.json",
-      "destination": { "service": "backend" }
+      "destination": {
+        "service": "backend",
+        "path": "/openapi.json"
+      }
     },
     {
       "source": "/(.*)",
-      "destination": { "service": "frontend" }
+      "destination": {
+        "service": "frontend"
+      }
     }
   ]
 }

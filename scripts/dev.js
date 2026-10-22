@@ -19,6 +19,7 @@ const backend = spawn(pythonCmd, ['-m', 'uvicorn', 'backend.main:app', '--reload
 const frontend = spawn('npm', ['run', 'dev', '--prefix', 'frontend'], {
   cwd: rootDir,
   stdio: 'inherit',
+  env: { ...process.env, BACKEND_URL: 'http://127.0.0.1:8000' },
 });
 
 function cleanup() {
