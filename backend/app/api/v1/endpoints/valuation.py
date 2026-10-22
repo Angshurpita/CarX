@@ -6,7 +6,8 @@ router = APIRouter()
 
 
 @router.post("/valuation/estimate", response_model=ValuationResponse)
-def estimate_fair_price(payload: ValuationRequest):
+async def estimate_fair_price(payload: ValuationRequest):
     """Estimate a vehicle's statistical fair asking price using the CarX valuation model."""
     service = ValuationService.get_instance()
-    return service.estimate(payload)
+    return await service.estimate_async(payload)
+

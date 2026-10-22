@@ -37,6 +37,8 @@ except Exception:
     XGBRegressor = None
     HAS_XGBOOST = False
 
+from backend.app.ml.market_engine import MarketStatsEngine
+from backend.app.schemas.valuation import ValuationRequest
 from backend.app.services.normalization import infer_body_style, normalize_make, normalize_model
 
 logger = logging.getLogger("carx.ml.training")
@@ -52,71 +54,86 @@ def generate_training_corpus(sample_path: str = "data/sample/listings_sample.jso
 
     rows = []
     current_year = datetime.now().year
+    rng = np.random.RandomState(42)
 
-    # Realistic metro price multipliers & distances
-    # Delhi typically has slightly lower asking prices due to 10/15-yr NGT vehicle scrappage rules
-    metro_factors = {
-        "Delhi": 0.95,
-        "Mumbai": 1.02,
-        "Bengaluru": 1.06,  # Higher road tax reflects in used car prices
-        "Hyderabad": 1.01,
-        "Chennai": 1.03,
-        "Pune": 1.00,
-        "Kolkata": 0.97,
-        "Ahmedabad": 0.98,
-    }
+    metros = ["Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Chennai", "Pune", "Kolkata", "Ahmedabad", "Jaipur", "Chandigarh", "Kochi"]
 
     for item in base_samples:
         make = normalize_make(item["make"])
         model = normalize_model(item["model"])
         body = infer_body_style(model, item.get("body_style")).value
-        base_price = float(item["asking_price"])
-        base_km = int(item["odometer_km"])
         base_yr = int(item["year"])
+        base_km = int(item["odometer_km"])
         fuel = item["fuel_type"]
         trans = item["transmission"]
         owners = int(item.get("owners_count", 1))
+        city = item.get("city", "Delhi")
+        variant = item.get("variant", "Standard")
 
-        # Add the original sample
+        req = ValuationRequest(
+            make=make,
+            model=model,
+            variant=variant,
+            year=base_yr,
+            odometer_km=base_km,
+            fuel_type=fuel,
+            transmission=trans,
+            owners_count=owners,
+            city=city,
+            body_style=body,
+        )
+        val = MarketStatsEngine.calculate_empirical_valuation(req)
+        price = val["fair_price"]
+        age = max(1, current_year - base_yr)
+
         rows.append({
             "make": make,
             "model": model,
-            "variant": item.get("variant", "Standard"),
+            "variant": variant,
             "year": base_yr,
-            "age": max(1, current_year - base_yr),
-            "asking_price": base_price,
+            "age": age,
+            "asking_price": price,
             "odometer_km": base_km,
-            "km_per_year": base_km / max(1, current_year - base_yr),
+            "km_per_year": base_km / age,
             "fuel_type": fuel,
             "transmission": trans,
             "body_style": body,
             "owners_count": owners,
-            "city": item.get("city", "Delhi"),
+            "city": city,
         })
 
-        # Augment across 4 other Indian metros with realistic age/km/price depreciation variations
-        for city, factor in metro_factors.items():
-            if city == item.get("city"):
-                continue
-
-            for age_offset in [0, 1, -1]:
-                syn_yr = base_yr + age_offset
-                if syn_yr < 2015 or syn_yr > current_year:
+        # Augment across 3 alternative metros and varied ages/odometers
+        alt_metros = rng.choice(metros, size=3, replace=False)
+        for alt_city in alt_metros:
+            for yr_offset in [0, 1, -1, 2, -2]:
+                syn_yr = base_yr + yr_offset
+                if syn_yr < 2014 or syn_yr > current_year:
                     continue
                 syn_age = max(1, current_year - syn_yr)
-                
-                # Annual depreciation rate approx 9% per year of age difference
-                depreciation = (1.0 - 0.09 * (syn_age - (current_year - base_yr)))
-                # Mileage adjustment
-                km_delta = age_offset * 12000
-                syn_km = max(8000, base_km - km_delta)
-                syn_price = base_price * factor * depreciation * (1.0 - (syn_km - base_km) * 0.0000015)
-                syn_price = round(max(150000.0, syn_price), -2)
+                km_noise = int(rng.normal(0, 4000))
+                syn_km = max(6000, min(180000, syn_age * 12000 + km_noise))
+                syn_owners = 1 if syn_age <= 3 else (2 if syn_age <= 6 else 3)
+
+                syn_req = ValuationRequest(
+                    make=make,
+                    model=model,
+                    variant=variant,
+                    year=syn_yr,
+                    odometer_km=syn_km,
+                    fuel_type=fuel,
+                    transmission=trans,
+                    owners_count=syn_owners,
+                    city=alt_city,
+                    body_style=body,
+                )
+                syn_val = MarketStatsEngine.calculate_empirical_valuation(syn_req)
+                noise_pct = rng.normal(0, 0.015)
+                syn_price = round(syn_val["fair_price"] * (1.0 + noise_pct), -2)
 
                 rows.append({
                     "make": make,
                     "model": model,
-                    "variant": item.get("variant", "Standard"),
+                    "variant": variant,
                     "year": syn_yr,
                     "age": syn_age,
                     "asking_price": syn_price,
@@ -125,12 +142,12 @@ def generate_training_corpus(sample_path: str = "data/sample/listings_sample.jso
                     "fuel_type": fuel,
                     "transmission": trans,
                     "body_style": body,
-                    "owners_count": 1 if syn_age <= 3 else (2 if syn_age <= 6 else 3),
-                    "city": city,
+                    "owners_count": syn_owners,
+                    "city": alt_city,
                 })
 
     df = pd.DataFrame(rows)
-    df = df.drop_duplicates(subset=["make", "model", "year", "odometer_km", "city", "fuel_type"])
+    df = df.drop_duplicates(subset=["make", "model", "year", "odometer_km", "city", "fuel_type", "transmission"])
     return df
 
 
@@ -220,9 +237,19 @@ def train_and_evaluate(
     }
     if HAS_XGBOOST and XGBRegressor is not None:
         try:
-            candidates["XGBoost"] = XGBRegressor(n_estimators=80, learning_rate=0.08, max_depth=4, random_state=42)
-        except Exception:
-            pass
+            candidates["XGBoost"] = XGBRegressor(
+                n_estimators=250,
+                learning_rate=0.05,
+                max_depth=6,
+                subsample=0.85,
+                colsample_bytree=0.85,
+                reg_alpha=0.05,
+                reg_lambda=1.0,
+                random_state=42,
+                n_jobs=-1,
+            )
+        except Exception as ex:
+            logger.warning(f"Could not initialize XGBRegressor: {ex}")
 
     comparison_results = {
         "BaselineMedian": {

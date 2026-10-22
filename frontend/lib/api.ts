@@ -3,7 +3,7 @@
  * Interacts with FastAPI backend endpoints on http://localhost:8000/api/v1
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 export interface NormalizedListing {
   id: string;
@@ -30,6 +30,7 @@ export interface NormalizedListing {
   first_observed_at: string;
   last_observed_at: string;
   age_years?: number;
+  image_url?: string;
 }
 
 export interface ListingSearchResult {
@@ -63,6 +64,35 @@ export interface ValuationRequest {
   body_style?: string;
 }
 
+export interface MarketTrendsInfo {
+  demand_level: string;
+  demand_score: number;
+  resale_retention_pct: number;
+  annual_depreciation_pct: number;
+  typical_days_to_sell: string;
+  market_trend_summary: string;
+  regulatory_advisory?: string | null;
+}
+
+export interface PriceBreakdownInfo {
+  dealer_trade_in: number;
+  private_party: number;
+  certified_retail: number;
+}
+
+export interface ValuationFactor {
+  label: string;
+  impact: string;
+  type: "positive" | "negative" | "neutral" | "critical";
+  description: string;
+}
+
+export interface PortalBenchmarkItem {
+  name: string;
+  url: string;
+  estimated_range: string;
+}
+
 export interface ValuationResponse {
   estimated_fair_price: number;
   price_range_low: number;
@@ -74,6 +104,11 @@ export interface ValuationResponse {
   data_freshness: string;
   prediction_provenance: any;
   disclaimer: string;
+  market_trends?: MarketTrendsInfo;
+  price_breakdown?: PriceBreakdownInfo;
+  valuation_factors?: ValuationFactor[];
+  portal_benchmarks?: Record<string, PortalBenchmarkItem>;
+  ai_engine?: string;
 }
 
 export interface DealCompareCandidate {
@@ -203,6 +238,14 @@ export async function streamChatMessage(
   const decoder = new TextDecoder();
   let buffer = "";
 
+  let isDone = false;
+  const finish = () => {
+    if (!isDone) {
+      isDone = true;
+      onDone();
+    }
+  };
+
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -220,7 +263,7 @@ export async function streamChatMessage(
           } else if (payload.type === "tool") {
             onTool(payload.tool);
           } else if (payload.type === "done") {
-            onDone();
+            finish();
           }
         } catch {
           // Ignore partial chunk parsing
@@ -228,5 +271,5 @@ export async function streamChatMessage(
       }
     }
   }
-  onDone();
+  finish();
 }

@@ -61,6 +61,24 @@ Open `http://localhost:3000` in your browser.
 
 ---
 
+## ⚡ 1-Deployment Monorepo on Vercel
+
+CarX is configured to deploy both Next.js and FastAPI in **1 single deployment**:
+
+1. **Push to GitHub / GitLab**.
+2. **Import into Vercel**:
+   - Leave **Root Directory** as `./`.
+   - Vercel automatically detects `vercel.json` and orchestrates both the `frontend` (Next.js) and `backend` (FastAPI) services atomically under one domain.
+3. **Add Environment Variables** in Vercel Project Settings:
+   - `OPENROUTER_API_KEY`: your OpenRouter API key.
+   - `VERCEL_SUPPORT_LARGE_FUNCTIONS`: `1`
+   - `DATABASE_URL`: (Optional) PostgreSQL URL (or omit to use zero-config SQLite in `/tmp/carx.db`).
+4. Click **Deploy**!
+
+For detailed operations and architecture, see [Deployment Guide](docs/DEPLOYMENT.md).
+
+---
+
 ## 🧪 Testing
 
 ```bash

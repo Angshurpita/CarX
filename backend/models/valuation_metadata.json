@@ -1,0 +1,101 @@
+{
+  "model_version": "v1.0-xgboost",
+  "selected_algorithm": "XGBoost",
+  "training_timestamp": "2026-10-20T12:15:36.490529+00:00",
+  "total_records": 4428,
+  "train_records": 3542,
+  "test_records": 886,
+  "features": {
+    "numerical": [
+      "age",
+      "odometer_km",
+      "owners_count",
+      "km_per_year"
+    ],
+    "categorical": [
+      "make",
+      "model",
+      "fuel_type",
+      "transmission",
+      "body_style",
+      "city"
+    ]
+  },
+  "metrics": {
+    "best_mae": 44520.41,
+    "baseline_mae": 30746.61,
+    "mae_improvement_pct": -44.8,
+    "model_comparison": {
+      "BaselineMedian": {
+        "mae": 30746.61,
+        "rmse": 55823.83,
+        "r2": 0.991
+      },
+      "RandomForest": {
+        "mae": 95599.62,
+        "rmse": 141162.25,
+        "r2": 0.9422
+      },
+      "GradientBoosting": {
+        "mae": 101564.06,
+        "rmse": 160100.6,
+        "r2": 0.9256
+      },
+      "XGBoost": {
+        "mae": 44520.41,
+        "rmse": 73652.1,
+        "r2": 0.9843
+      }
+    },
+    "segment_errors": {
+      "Hatchback": {
+        "count": 113,
+        "mae": 13051.52,
+        "mean_price": 355861.95,
+        "mape_pct": 3.91
+      },
+      "Luxury": {
+        "count": 112,
+        "mae": 86557.88,
+        "mean_price": 1371550.0,
+        "mape_pct": 7.44
+      },
+      "MUV": {
+        "count": 66,
+        "mae": 61213.34,
+        "mean_price": 952640.91,
+        "mape_pct": 5.91
+      },
+      "SUV": {
+        "count": 471,
+        "mae": 39359.91,
+        "mean_price": 708145.65,
+        "mape_pct": 5.55
+      },
+      "Sedan": {
+        "count": 124,
+        "mae": 45944.99,
+        "mean_price": 673438.71,
+        "mape_pct": 5.97
+      }
+    },
+    "price_band_errors": {
+      "Under \u20b97 Lakh": {
+        "count": 548,
+        "mae": 22329.23,
+        "mape_pct": 5.47
+      },
+      "\u20b97 Lakh - \u20b915 Lakh": {
+        "count": 254,
+        "mae": 58449.71,
+        "mape_pct": 5.8
+      },
+      "Above \u20b915 Lakh": {
+        "count": 84,
+        "mae": 147171.86,
+        "mape_pct": 6.51
+      }
+    }
+  },
+  "disclaimer": "Models estimate statistical fair asking prices. Real transaction prices depend on certified in-person condition assessments."
+}

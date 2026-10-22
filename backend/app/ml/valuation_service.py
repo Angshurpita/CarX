@@ -1,7 +1,8 @@
 """Runtime Valuation Inference Service.
 
-Loads serialized model pipelines and baseline lookup tables,
-evaluates input vehicle features, and generates bounded fair asking prices.
+Integrates AIEnhancedValuationEngine (Google Gemma / Gemini LLM API + Indian Market Trends)
+with baseline lookup tables and trained models, evaluates input vehicle features,
+and generates bounded fair asking prices and deep market analytics.
 """
 from datetime import datetime, timezone
 import json
@@ -14,6 +15,7 @@ import pandas as pd
 
 from backend.app.core.cache import cache
 from backend.app.core.config import settings
+from backend.app.ml.market_engine import AIEnhancedValuationEngine
 from backend.app.ml.training import (
     CATEGORICAL_FEATURES,
     NUMERICAL_FEATURES,
@@ -49,8 +51,9 @@ class ValuationService:
     def get_instance(cls) -> "ValuationService":
         if cls._instance is None:
             cls._instance = cls(
-                model_path=settings.MODEL_ARTIFACT_PATH,
-                lookup_path=settings.BASELINE_LOOKUP_PATH,
+                model_path=settings.resolved_model_path,
+                lookup_path=settings.resolved_baseline_lookup_path,
+                meta_path=settings.resolved_valuation_meta_path,
             )
         return cls._instance
 
@@ -59,7 +62,7 @@ class ValuationService:
         if not self.model_path.exists() or not self.lookup_path.exists():
             logger.info("Valuation artifacts not found. Initiating automated training...")
             meta = train_and_evaluate(
-                sample_path=settings.SAMPLE_DATA_PATH,
+                sample_path=settings.resolved_sample_data_path,
                 output_dir=str(self.model_path.parent),
             )
             self.metadata = meta
@@ -75,92 +78,69 @@ class ValuationService:
         except Exception as e:
             logger.error(f"Failed to load valuation model: {e}")
 
+    def predict_xgb_price(self, req: ValuationRequest) -> Optional[float]:
+        """Execute inference using the trained XGBoost Pipeline."""
+        if self.pipeline is None:
+            return None
+        try:
+            norm_make = normalize_make(req.make)
+            norm_model = normalize_model(req.model)
+            body_style = infer_body_style(norm_model, req.body_style).value
+            current_year = datetime.now().year
+            age = max(1, current_year - req.year)
+            km_per_year = float(req.odometer_km) / max(1, age)
+
+            feature_df = pd.DataFrame([{
+                "age": age,
+                "odometer_km": float(req.odometer_km),
+                "owners_count": int(req.owners_count),
+                "km_per_year": km_per_year,
+                "make": norm_make,
+                "model": norm_model,
+                "fuel_type": req.fuel_type,
+                "transmission": req.transmission,
+                "body_style": body_style,
+                "city": req.city,
+            }])
+            pred_log = self.pipeline.predict(feature_df)
+            val = float(np.expm1(pred_log)[0])
+            if np.isnan(val) or val <= 0:
+                return None
+            return round(val, -2)
+        except Exception as e:
+            logger.warning(f"XGBoost pipeline prediction failed: {e}")
+            return None
+
     def estimate(self, req: ValuationRequest) -> ValuationResponse:
-        """Estimate statistical fair asking price with prediction intervals."""
+        """Estimate statistical fair asking price synchronously using XGBoost Regression."""
         cache_key = cache.generate_key("val", req.model_dump())
         cached_val = cache.get(cache_key)
         if cached_val is not None:
             return cached_val
 
-        current_year = datetime.now().year
-        age = max(1, current_year - req.year)
-        km_per_year = req.odometer_km / age
+        xgb_price = self.predict_xgb_price(req)
+        response = AIEnhancedValuationEngine.evaluate_sync(req, ml_price=xgb_price)
+        selected_algo = self.metadata.get("selected_algorithm", "XGBoost")
+        response.prediction_provenance["algorithm"] = selected_algo
+        response.prediction_provenance["xgboost_price_inr"] = xgb_price
+        response.model_version = self.metadata.get("model_version", "v1.0-xgboost")
 
-        norm_make = normalize_make(req.make)
-        norm_model = normalize_model(req.model)
-        body_style = infer_body_style(norm_model, req.body_style).value
+        cache.set(cache_key, response, ttl_seconds=3600)
+        return response
 
-        # 1. Baseline median estimation
-        row_dict = {
-            "make": norm_make,
-            "model": norm_model,
-            "year": req.year,
-            "age": age,
-            "odometer_km": req.odometer_km,
-            "km_per_year": km_per_year,
-            "fuel_type": req.fuel_type,
-            "transmission": req.transmission,
-            "body_style": body_style,
-            "owners_count": req.owners_count,
-            "city": req.city,
-        }
-        baseline_price = predict_baseline(self.baseline_lookup, pd.Series(row_dict))
+    async def estimate_async(self, req: ValuationRequest) -> ValuationResponse:
+        """Estimate statistical fair asking price asynchronously using XGBoost + AI engine."""
+        cache_key = cache.generate_key("val", req.model_dump())
+        cached_val = cache.get(cache_key)
+        if cached_val is not None:
+            return cached_val
 
-        # 2. ML Pipeline estimation
-        ml_estimate = None
-        if self.pipeline is not None:
-            try:
-                features_df = pd.DataFrame([row_dict])[NUMERICAL_FEATURES + CATEGORICAL_FEATURES]
-                pred_log = self.pipeline.predict(features_df)[0]
-                ml_estimate = float(np.expm1(pred_log))
-            except Exception as e:
-                logger.warning(f"ML inference fallback to baseline: {e}")
+        xgb_price = self.predict_xgb_price(req)
+        response = await AIEnhancedValuationEngine.evaluate(req, ml_price=xgb_price)
+        selected_algo = self.metadata.get("selected_algorithm", "XGBoost")
+        response.prediction_provenance["algorithm"] = selected_algo
+        response.prediction_provenance["xgboost_price_inr"] = xgb_price
+        response.model_version = self.metadata.get("model_version", "v1.0-xgboost")
 
-        # Choose authoritative prediction
-        final_estimate = round(ml_estimate if ml_estimate else baseline_price, -2)
-
-        # 3. Uncertainty & Prediction Interval
-        # Typical MAPE in used car valuation models is ~8-11%.
-        # We compute an explicit 90% prediction band.
-        uncertainty_pct = 0.09
-        if age > 5:
-            uncertainty_pct += 0.02
-        if req.odometer_km > 70000:
-            uncertainty_pct += 0.02
-        if req.owners_count > 1:
-            uncertainty_pct += 0.015
-
-        price_low = round(final_estimate * (1.0 - uncertainty_pct), -2)
-        price_high = round(final_estimate * (1.0 + uncertainty_pct), -2)
-
-        confidence = round(max(0.70, min(0.95, 1.0 - uncertainty_pct)), 2)
-        model_ver = self.metadata.get("model_version", "v1.0-gbdt")
-        freshness = self.metadata.get("training_timestamp", datetime.now(timezone.utc).isoformat())
-
-        provenance = {
-            "model_version": model_ver,
-            "algorithm": self.metadata.get("selected_algorithm", "GradientBoosting"),
-            "baseline_median_inr": baseline_price,
-            "uncertainty_band_pct": round(uncertainty_pct * 100, 1),
-            "inputs_normalized": {
-                "make": norm_make,
-                "model": norm_model,
-                "body_style": body_style,
-                "age_years": age,
-                "km_per_year": round(km_per_year, 0),
-            },
-        }
-
-        val_response = ValuationResponse(
-            estimated_fair_price=final_estimate,
-            price_range_low=price_low,
-            price_range_high=price_high,
-            baseline_median_price=round(baseline_price, -2),
-            model_version=model_ver,
-            confidence_score=confidence,
-            currency="INR",
-            data_freshness=freshness,
-            prediction_provenance=provenance,
-        )
-        cache.set(cache_key, val_response, ttl_seconds=3600)
-        return val_response
+        cache.set(cache_key, response, ttl_seconds=3600)
+        return response

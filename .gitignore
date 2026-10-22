@@ -31,6 +31,8 @@ yarn-error.log*
 *.sqlite
 *.sqlite3
 *.db
+!carx.db
+!backend/carx.db
 local_data/
 
 # IDE & OS
@@ -40,9 +42,11 @@ local_data/
 *.swp
 *.swo
 
-# Trained models & large binary artifacts (keep small demo models if tracked, ignore binaries)
+# Trained models & lightweight production artifacts
 models/*.pkl
 models/*.joblib
+!models/valuation_model.joblib
+!backend/models/valuation_model.joblib
 models/*.bin
 models/*.ubj
 !models/README.md

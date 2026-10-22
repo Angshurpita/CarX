@@ -26,6 +26,11 @@ class ValuationResponse(BaseModel):
     currency: str = "INR"
     data_freshness: str = Field(..., description="Model training snapshot timestamp")
     prediction_provenance: Dict[str, Any] = Field(..., description="Provenance metadata and feature importance insights")
+    market_trends: Optional[Dict[str, Any]] = Field(None, description="Current market demand, liquidity, retention and trends")
+    price_breakdown: Optional[Dict[str, Any]] = Field(None, description="Trade-in instant cash, private party, and dealer retail estimates")
+    valuation_factors: Optional[list] = Field(None, description="Key value drivers including mileage, age, metro tax, ownership")
+    portal_benchmarks: Optional[Dict[str, Any]] = Field(None, description="Expected price bands across CarWale, Spinny, Cars24, and CarDekho")
+    ai_engine: Optional[str] = Field("Gemma / Gemini Automotive AI", description="AI engine provider and status")
     disclaimer: str = Field(
         "Estimated fair asking price reflects statistical market central tendency. It does not predict the exact closing transaction price. Physical certified inspection is strongly recommended.",
         description="Mandatory consumer disclosure"

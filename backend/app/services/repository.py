@@ -54,6 +54,7 @@ class ListingRepository:
             first_observed_at=model.first_observed_at,
             last_observed_at=model.last_observed_at,
             raw_payload=model.raw_payload or {},
+            image_url=model.image_url,
         )
 
     @classmethod
@@ -110,6 +111,7 @@ class ListingRepository:
                 first_observed_at=listing.first_observed_at,
                 last_observed_at=listing.last_observed_at,
                 raw_payload=listing.raw_payload,
+                image_url=listing.image_url,
             )
             db.add(new_model)
             db.commit()

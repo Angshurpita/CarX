@@ -273,6 +273,8 @@ class ToolExecutor:
                     "baseline_median_price": res.baseline_median_price,
                     "confidence_score": res.confidence_score,
                     "model_version": res.model_version,
+                    "market_trends": res.market_trends,
+                    "price_breakdown": res.price_breakdown,
                     "disclaimer": res.disclaimer,
                 }
 

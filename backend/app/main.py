@@ -1,5 +1,16 @@
+import sys
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+from pathlib import Path
+
+# Ensure project root and backend dir are always on sys.path
+_current_file = Path(__file__).resolve()
+_backend_dir = _current_file.parent.parent
+_project_root = _backend_dir.parent
+for _p in [str(_backend_dir), str(_project_root)]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -16,7 +27,7 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
-        ListingRepository.seed_sample_data_if_empty(db, sample_path=settings.SAMPLE_DATA_PATH)
+        ListingRepository.seed_sample_data_if_empty(db, sample_path=settings.resolved_sample_data_path)
     finally:
         db.close()
     yield
@@ -30,10 +41,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS Middleware
+# CORS Middleware: allow all HTTP/HTTPS origins (including Vercel preview URLs)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS if settings.CORS_ORIGINS else ["*"],
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

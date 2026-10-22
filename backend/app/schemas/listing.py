@@ -91,6 +91,7 @@ class RawListingInput(BaseModel):
     observed_at: Optional[datetime] = None
     is_demo: bool = False
     raw_payload: Optional[Dict[str, Any]] = None
+    image_url: Optional[str] = None
 
     @field_validator("asking_price")
     @classmethod
@@ -150,6 +151,7 @@ class NormalizedListing(BaseModel):
     first_observed_at: datetime = Field(default_factory=utc_now)
     last_observed_at: datetime = Field(default_factory=utc_now)
     raw_payload: Optional[Dict[str, Any]] = None
+    image_url: Optional[str] = None
 
     # Computed fields
     age_years: Optional[int] = None

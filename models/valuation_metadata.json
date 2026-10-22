@@ -1,10 +1,10 @@
 {
-  "model_version": "v1.0-randomforest",
-  "selected_algorithm": "RandomForest",
-  "training_timestamp": "2026-10-13T13:45:44.050679+00:00",
-  "total_records": 6230,
-  "train_records": 4984,
-  "test_records": 1246,
+  "model_version": "v1.0-xgboost",
+  "selected_algorithm": "XGBoost",
+  "training_timestamp": "2026-10-20T12:15:36.490529+00:00",
+  "total_records": 4428,
+  "train_records": 3542,
+  "test_records": 886,
   "features": {
     "numerical": [
       "age",
@@ -22,78 +22,78 @@
     ]
   },
   "metrics": {
-    "best_mae": 117071.97,
-    "baseline_mae": 89715.09,
-    "mae_improvement_pct": -30.49,
+    "best_mae": 44520.41,
+    "baseline_mae": 30746.61,
+    "mae_improvement_pct": -44.8,
     "model_comparison": {
       "BaselineMedian": {
-        "mae": 89715.09,
-        "rmse": 151321.54,
-        "r2": 0.9763
+        "mae": 30746.61,
+        "rmse": 55823.83,
+        "r2": 0.991
       },
       "RandomForest": {
-        "mae": 117071.97,
-        "rmse": 170719.03,
-        "r2": 0.9698
+        "mae": 95599.62,
+        "rmse": 141162.25,
+        "r2": 0.9422
       },
       "GradientBoosting": {
-        "mae": 154065.52,
-        "rmse": 224838.67,
-        "r2": 0.9476
+        "mae": 101564.06,
+        "rmse": 160100.6,
+        "r2": 0.9256
       },
       "XGBoost": {
-        "mae": 158193.48,
-        "rmse": 233589.69,
-        "r2": 0.9434
+        "mae": 44520.41,
+        "rmse": 73652.1,
+        "r2": 0.9843
       }
     },
     "segment_errors": {
       "Hatchback": {
-        "count": 159,
-        "mae": 21147.91,
-        "mean_price": 666868.55,
-        "mape_pct": 3.25
+        "count": 113,
+        "mae": 13051.52,
+        "mean_price": 355861.95,
+        "mape_pct": 3.91
       },
       "Luxury": {
-        "count": 156,
-        "mae": 97082.02,
-        "mean_price": 3183487.18,
-        "mape_pct": 3.01
+        "count": 112,
+        "mae": 86557.88,
+        "mean_price": 1371550.0,
+        "mape_pct": 7.44
       },
       "MUV": {
-        "count": 92,
-        "mae": 127118.91,
-        "mean_price": 1653738.04,
-        "mape_pct": 7.88
+        "count": 66,
+        "mae": 61213.34,
+        "mean_price": 952640.91,
+        "mape_pct": 5.91
       },
       "SUV": {
-        "count": 663,
-        "mae": 144963.73,
-        "mean_price": 1306937.25,
-        "mape_pct": 11.62
+        "count": 471,
+        "mae": 39359.91,
+        "mean_price": 708145.65,
+        "mape_pct": 5.55
       },
       "Sedan": {
-        "count": 176,
-        "mae": 111127.7,
-        "mean_price": 1101454.55,
-        "mape_pct": 11.93
+        "count": 124,
+        "mae": 45944.99,
+        "mean_price": 673438.71,
+        "mape_pct": 5.97
       }
     },
     "price_band_errors": {
       "Under \u20b97 Lakh": {
-        "count": 219,
-        "mae": 61896.85,
-        "mape_pct": 10.8
+        "count": 548,
+        "mae": 22329.23,
+        "mape_pct": 5.47
       },
       "\u20b97 Lakh - \u20b915 Lakh": {
-        "count": 612,
-        "mae": 102140.92,
-        "mape_pct": 9.88
+        "count": 254,
+        "mae": 58449.71,
+        "mape_pct": 5.8
       },
       "Above \u20b915 Lakh": {
-        "count": 415,
-        "mae": 168207.3,
-        "mape_pct": 7.49
+        "count": 84,
+        "mae": 147171.86,
+        "mape_pct": 6.51
       }
     }
   },

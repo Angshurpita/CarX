@@ -65,6 +65,7 @@ class ListingModel(Base):
     first_observed_at = Column(DateTime(timezone=True), default=utc_now)
     last_observed_at = Column(DateTime(timezone=True), default=utc_now)
     raw_payload = Column(JSON, nullable=True)
+    image_url = Column(String(500), nullable=True)
 
     provider = relationship("ProviderModel", back_populates="listings")
     price_history = relationship(
