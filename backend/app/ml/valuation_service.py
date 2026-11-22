@@ -11,14 +11,10 @@ import math
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-try:
-    import joblib
-    import numpy as np
-    import pandas as pd
-except ImportError:
-    joblib = None
-    np = None
-    pd = None
+# Lazy ML module references (loaded on-demand only if fallback joblib pipeline is required)
+joblib = None
+np = None
+pd = None
 
 from backend.app.core.cache import cache
 from backend.app.core.config import settings
@@ -78,8 +74,9 @@ class ValuationService:
                     logger.warning(f"Could not load light model {p}: {e}")
 
         # 2. Try loading full scikit-learn / joblib pipeline if available
-        if self.light_model is None and joblib is not None and self.model_path.exists():
+        if self.light_model is None and self.model_path.exists():
             try:
+                import joblib
                 self.pipeline = joblib.load(self.model_path)
                 logger.info("Loaded joblib valuation pipeline.")
             except Exception as e:
@@ -160,8 +157,10 @@ class ValuationService:
                 logger.warning(f"Lightweight tree inference error: {e}")
 
         # Fallback to joblib pipeline if available
-        if self.pipeline is not None and pd is not None and np is not None:
+        if self.pipeline is not None:
             try:
+                import numpy as np
+                import pandas as pd
                 feature_df = pd.DataFrame([{
                     "age": age,
                     "odometer_km": float(req.odometer_km),

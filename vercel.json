@@ -14,36 +14,31 @@
     {
       "source": "/api/(.*)",
       "destination": {
-        "service": "backend",
-        "path": "/api/$1"
+        "service": "backend"
       }
     },
     {
       "source": "/health",
       "destination": {
-        "service": "backend",
-        "path": "/health"
+        "service": "backend"
       }
     },
     {
       "source": "/docs",
       "destination": {
-        "service": "backend",
-        "path": "/docs"
+        "service": "backend"
       }
     },
     {
       "source": "/redoc",
       "destination": {
-        "service": "backend",
-        "path": "/redoc"
+        "service": "backend"
       }
     },
     {
       "source": "/openapi.json",
       "destination": {
-        "service": "backend",
-        "path": "/openapi.json"
+        "service": "backend"
       }
     },
     {

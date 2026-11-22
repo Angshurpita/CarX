@@ -65,7 +65,7 @@ class ListingRepository:
         return cls.model_to_schema(rec)
 
     @classmethod
-    def upsert_listing(cls, db: Session, listing: NormalizedListing) -> ListingModel:
+    def upsert_listing(cls, db: Session, listing: NormalizedListing, commit: bool = True) -> ListingModel:
         listing_id = listing.id or f"{listing.provider_name}_{listing.source_listing_id}"
         existing = db.query(ListingModel).filter(ListingModel.id == listing_id).first()
 
@@ -82,8 +82,9 @@ class ListingRepository:
                 )
                 db.add(history_entry)
                 existing.asking_price = listing.asking_price
-            db.commit()
-            db.refresh(existing)
+            if commit:
+                db.commit()
+                db.refresh(existing)
             return existing
         else:
             new_model = ListingModel(
@@ -114,8 +115,6 @@ class ListingRepository:
                 image_url=listing.image_url,
             )
             db.add(new_model)
-            db.commit()
-            db.refresh(new_model)
 
             # Record initial price in history
             hist = ListingPriceHistoryModel(
@@ -124,7 +123,9 @@ class ListingRepository:
                 observed_at=new_model.first_observed_at,
             )
             db.add(hist)
-            db.commit()
+            if commit:
+                db.commit()
+                db.refresh(new_model)
             return new_model
 
     @classmethod
@@ -262,7 +263,7 @@ class ListingRepository:
             raw_records = provider.fetch_raw_listings()
             for record in raw_records:
                 normalized = normalize_listing_record(record)
-                cls.upsert_listing(db, normalized)
+                cls.upsert_listing(db, normalized, commit=False)
             db.commit()
             cache.clear()
 

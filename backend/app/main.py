@@ -95,7 +95,10 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    import logging
+    import traceback
+    logging.getLogger("carx.main").error(f"Unhandled exception on {request.method} {request.url}: {exc}\n{traceback.format_exc()}")
     return JSONResponse(
         status_code=500,
-        content={"error": "InternalServerError", "message": str(exc) if settings.DEBUG else "An unexpected error occurred"},
+        content={"error": "InternalServerError", "message": str(exc)},
     )

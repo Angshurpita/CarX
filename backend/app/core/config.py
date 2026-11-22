@@ -18,7 +18,11 @@ def _resolve_asset_path(default_rel: str, candidates: List[Path]) -> str:
 
 
 def _resolve_database_url(raw_url: str) -> str:
-    """Configures SQLite safely for Vercel and serverless read-only filesystems using /tmp."""
+    """Configures database URL safely for Vercel, Supabase/Neon, and serverless filesystems."""
+    # Convert legacy postgres:// dialect to postgresql:// required by SQLAlchemy 2.0
+    if raw_url.startswith("postgres://"):
+        raw_url = raw_url.replace("postgres://", "postgresql://", 1)
+
     is_serverless = os.getenv("VERCEL") == "1" or bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
     if is_serverless and raw_url.startswith("sqlite"):
         tmp_db = Path("/tmp/carx.db")
