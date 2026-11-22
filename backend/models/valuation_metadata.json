@@ -1,99 +1,919 @@
 {
   "model_version": "v1.0-xgboost",
   "selected_algorithm": "XGBoost",
-  "training_timestamp": "2026-10-20T12:15:36.490529+00:00",
-  "total_records": 4428,
-  "train_records": 3542,
-  "test_records": 886,
+  "training_timestamp": "2026-11-22T11:30:55.352054+00:00",
+  "total_records": 15411,
+  "train_records": 12328,
+  "test_records": 3083,
   "features": {
     "numerical": [
-      "age",
-      "odometer_km",
-      "owners_count",
-      "km_per_year"
+      "vehicle_age",
+      "km_driven",
+      "mileage",
+      "engine",
+      "max_power",
+      "seats"
     ],
     "categorical": [
-      "make",
+      "brand",
       "model",
+      "seller_type",
       "fuel_type",
-      "transmission",
-      "body_style",
-      "city"
-    ]
+      "transmission_type"
+    ],
+    "target": "selling_price"
+  },
+  "feature_importances": {
+    "vehicle_age": 3.36,
+    "km_driven": 0.3,
+    "mileage": 0.59,
+    "engine": 3.29,
+    "max_power": 17.83,
+    "seats": 1.04,
+    "brand": 14.74,
+    "model": 39.48,
+    "seller_type": 0.39,
+    "fuel_type": 8.87,
+    "transmission_type": 10.12
+  },
+  "brand_model_specs": {
+    "Audi": {
+      "A4": {
+        "mileage": 17.11,
+        "engine": 1968.0,
+        "max_power": 167.6,
+        "seats": 5
+      },
+      "A6": {
+        "mileage": 17.68,
+        "engine": 1968.0,
+        "max_power": 174.3,
+        "seats": 5
+      },
+      "A8": {
+        "mileage": 11.8,
+        "engine": 2967.0,
+        "max_power": 246.7,
+        "seats": 5
+      },
+      "Q7": {
+        "mileage": 12.07,
+        "engine": 2967.0,
+        "max_power": 241.4,
+        "seats": 7
+      }
+    },
+    "BMW": {
+      "3": {
+        "mileage": 18.88,
+        "engine": 1995.0,
+        "max_power": 184.0,
+        "seats": 5
+      },
+      "5": {
+        "mileage": 18.12,
+        "engine": 1995.0,
+        "max_power": 190.0,
+        "seats": 5
+      },
+      "6": {
+        "mileage": 14.28,
+        "engine": 2993.0,
+        "max_power": 261.4,
+        "seats": 4
+      },
+      "7": {
+        "mileage": 16.46,
+        "engine": 2993.0,
+        "max_power": 258.0,
+        "seats": 5
+      },
+      "X1": {
+        "mileage": 19.62,
+        "engine": 1995.0,
+        "max_power": 188.0,
+        "seats": 5
+      },
+      "X3": {
+        "mileage": 16.09,
+        "engine": 1995.0,
+        "max_power": 184.0,
+        "seats": 5
+      },
+      "X4": {
+        "mileage": 16.78,
+        "engine": 1995.0,
+        "max_power": 190.0,
+        "seats": 5
+      },
+      "X5": {
+        "mileage": 15.3,
+        "engine": 2993.0,
+        "max_power": 258.0,
+        "seats": 5
+      },
+      "Z4": {
+        "mileage": 10.37,
+        "engine": 2979.0,
+        "max_power": 303.9,
+        "seats": 2
+      }
+    },
+    "Bentley": {
+      "Continental": {
+        "mileage": 8.6,
+        "engine": 5998.0,
+        "max_power": 600.0,
+        "seats": 4
+      }
+    },
+    "Datsun": {
+      "GO": {
+        "mileage": 19.83,
+        "engine": 1198.0,
+        "max_power": 67.0,
+        "seats": 7
+      },
+      "RediGO": {
+        "mileage": 22.7,
+        "engine": 799.0,
+        "max_power": 53.6,
+        "seats": 5
+      },
+      "redi-GO": {
+        "mileage": 21.2,
+        "engine": 899.0,
+        "max_power": 60.3,
+        "seats": 5
+      }
+    },
+    "Ferrari": {
+      "GTC4Lusso": {
+        "mileage": 4.0,
+        "engine": 3855.0,
+        "max_power": 601.0,
+        "seats": 4
+      }
+    },
+    "Force": {
+      "Gurkha": {
+        "mileage": 17.0,
+        "engine": 2596.0,
+        "max_power": 80.8,
+        "seats": 5
+      }
+    },
+    "Ford": {
+      "Aspire": {
+        "mileage": 25.83,
+        "engine": 1498.0,
+        "max_power": 99.0,
+        "seats": 5
+      },
+      "Ecosport": {
+        "mileage": 22.7,
+        "engine": 1498.0,
+        "max_power": 99.0,
+        "seats": 5
+      },
+      "Endeavour": {
+        "mileage": 10.91,
+        "engine": 3198.0,
+        "max_power": 197.0,
+        "seats": 7
+      },
+      "Figo": {
+        "mileage": 20.0,
+        "engine": 1399.0,
+        "max_power": 68.0,
+        "seats": 5
+      },
+      "Freestyle": {
+        "mileage": 19.0,
+        "engine": 1194.0,
+        "max_power": 94.7,
+        "seats": 5
+      }
+    },
+    "Honda": {
+      "Amaze": {
+        "mileage": 19.5,
+        "engine": 1199.0,
+        "max_power": 88.8,
+        "seats": 5
+      },
+      "CR": {
+        "mileage": 12.0,
+        "engine": 2354.0,
+        "max_power": 187.4,
+        "seats": 5
+      },
+      "CR-V": {
+        "mileage": 12.0,
+        "engine": 2354.0,
+        "max_power": 152.0,
+        "seats": 5
+      },
+      "City": {
+        "mileage": 17.7,
+        "engine": 1497.0,
+        "max_power": 117.3,
+        "seats": 5
+      },
+      "Civic": {
+        "mileage": 13.5,
+        "engine": 1799.0,
+        "max_power": 130.0,
+        "seats": 5
+      },
+      "Jazz": {
+        "mileage": 18.7,
+        "engine": 1199.0,
+        "max_power": 88.7,
+        "seats": 5
+      },
+      "WR-V": {
+        "mileage": 25.5,
+        "engine": 1498.0,
+        "max_power": 98.6,
+        "seats": 5
+      }
+    },
+    "Hyundai": {
+      "Aura": {
+        "mileage": 20.5,
+        "engine": 1197.0,
+        "max_power": 81.9,
+        "seats": 5
+      },
+      "Creta": {
+        "mileage": 19.67,
+        "engine": 1582.0,
+        "max_power": 121.3,
+        "seats": 5
+      },
+      "Elantra": {
+        "mileage": 16.3,
+        "engine": 1582.0,
+        "max_power": 126.2,
+        "seats": 5
+      },
+      "Grand": {
+        "mileage": 18.9,
+        "engine": 1197.0,
+        "max_power": 81.9,
+        "seats": 5
+      },
+      "Santro": {
+        "mileage": 17.92,
+        "engine": 1086.0,
+        "max_power": 62.1,
+        "seats": 5
+      },
+      "Tucson": {
+        "mileage": 16.38,
+        "engine": 1995.0,
+        "max_power": 182.5,
+        "seats": 5
+      },
+      "Venue": {
+        "mileage": 18.27,
+        "engine": 998.0,
+        "max_power": 118.3,
+        "seats": 5
+      },
+      "Verna": {
+        "mileage": 19.08,
+        "engine": 1582.0,
+        "max_power": 121.4,
+        "seats": 5
+      },
+      "i10": {
+        "mileage": 20.36,
+        "engine": 1197.0,
+        "max_power": 78.9,
+        "seats": 5
+      },
+      "i20": {
+        "mileage": 18.6,
+        "engine": 1197.0,
+        "max_power": 81.9,
+        "seats": 5
+      }
+    },
+    "ISUZU": {
+      "MUX": {
+        "mileage": 13.8,
+        "engine": 2999.0,
+        "max_power": 175.0,
+        "seats": 7
+      }
+    },
+    "Isuzu": {
+      "D-Max": {
+        "mileage": 12.4,
+        "engine": 2499.0,
+        "max_power": 134.0,
+        "seats": 5
+      },
+      "MUX": {
+        "mileage": 13.8,
+        "engine": 2999.0,
+        "max_power": 174.6,
+        "seats": 7
+      }
+    },
+    "Jaguar": {
+      "F-PACE": {
+        "mileage": 16.38,
+        "engine": 1999.0,
+        "max_power": 177.0,
+        "seats": 5
+      },
+      "XE": {
+        "mileage": 13.6,
+        "engine": 1999.0,
+        "max_power": 177.0,
+        "seats": 5
+      },
+      "XF": {
+        "mileage": 16.36,
+        "engine": 2179.0,
+        "max_power": 187.7,
+        "seats": 5
+      }
+    },
+    "Jeep": {
+      "Compass": {
+        "mileage": 17.1,
+        "engine": 1956.0,
+        "max_power": 170.0,
+        "seats": 5
+      },
+      "Wrangler": {
+        "mileage": 9.5,
+        "engine": 3604.0,
+        "max_power": 280.0,
+        "seats": 5
+      }
+    },
+    "Kia": {
+      "Carnival": {
+        "mileage": 14.11,
+        "engine": 2199.0,
+        "max_power": 197.2,
+        "seats": 7
+      },
+      "Seltos": {
+        "mileage": 16.8,
+        "engine": 1493.0,
+        "max_power": 113.4,
+        "seats": 5
+      }
+    },
+    "Land Rover": {
+      "Rover": {
+        "mileage": 12.65,
+        "engine": 2179.0,
+        "max_power": 187.7,
+        "seats": 5
+      }
+    },
+    "Lexus": {
+      "ES": {
+        "mileage": 22.37,
+        "engine": 2487.0,
+        "max_power": 214.6,
+        "seats": 5
+      },
+      "NX": {
+        "mileage": 18.32,
+        "engine": 2499.0,
+        "max_power": 194.3,
+        "seats": 5
+      },
+      "RX": {
+        "mileage": 18.8,
+        "engine": 3456.0,
+        "max_power": 258.9,
+        "seats": 5
+      }
+    },
+    "MG": {
+      "Hector": {
+        "mileage": 15.81,
+        "engine": 1451.0,
+        "max_power": 141.0,
+        "seats": 5
+      }
+    },
+    "Mahindra": {
+      "Alturas": {
+        "mileage": 12.05,
+        "engine": 2157.0,
+        "max_power": 178.5,
+        "seats": 7
+      },
+      "Bolero": {
+        "mileage": 15.96,
+        "engine": 2523.0,
+        "max_power": 63.0,
+        "seats": 7
+      },
+      "KUV": {
+        "mileage": 21.73,
+        "engine": 1198.0,
+        "max_power": 79.5,
+        "seats": 6
+      },
+      "KUV100": {
+        "mileage": 25.32,
+        "engine": 1198.0,
+        "max_power": 77.0,
+        "seats": 6
+      },
+      "Marazzo": {
+        "mileage": 17.3,
+        "engine": 1497.0,
+        "max_power": 121.0,
+        "seats": 7
+      },
+      "Scorpio": {
+        "mileage": 15.4,
+        "engine": 2179.0,
+        "max_power": 120.0,
+        "seats": 7
+      },
+      "Thar": {
+        "mileage": 16.55,
+        "engine": 2498.0,
+        "max_power": 105.0,
+        "seats": 6
+      },
+      "XUV300": {
+        "mileage": 17.0,
+        "engine": 1197.0,
+        "max_power": 110.0,
+        "seats": 5
+      },
+      "XUV500": {
+        "mileage": 15.1,
+        "engine": 2179.0,
+        "max_power": 140.0,
+        "seats": 7
+      }
+    },
+    "Maruti": {
+      "Alto": {
+        "mileage": 22.74,
+        "engine": 796.0,
+        "max_power": 47.3,
+        "seats": 5
+      },
+      "Baleno": {
+        "mileage": 21.4,
+        "engine": 1197.0,
+        "max_power": 83.1,
+        "seats": 5
+      },
+      "Celerio": {
+        "mileage": 23.1,
+        "engine": 998.0,
+        "max_power": 67.0,
+        "seats": 5
+      },
+      "Ciaz": {
+        "mileage": 26.21,
+        "engine": 1310.5,
+        "max_power": 89.8,
+        "seats": 5
+      },
+      "Dzire LXI": {
+        "mileage": 23.26,
+        "engine": 1197.0,
+        "max_power": 88.5,
+        "seats": 5
+      },
+      "Dzire VXI": {
+        "mileage": 23.26,
+        "engine": 1197.0,
+        "max_power": 88.5,
+        "seats": 5
+      },
+      "Dzire ZXI": {
+        "mileage": 23.26,
+        "engine": 1197.0,
+        "max_power": 88.5,
+        "seats": 5
+      },
+      "Eeco": {
+        "mileage": 15.37,
+        "engine": 1196.0,
+        "max_power": 73.0,
+        "seats": 5
+      },
+      "Ertiga": {
+        "mileage": 20.77,
+        "engine": 1248.0,
+        "max_power": 88.8,
+        "seats": 7
+      },
+      "Ignis": {
+        "mileage": 20.89,
+        "engine": 1197.0,
+        "max_power": 81.8,
+        "seats": 5
+      },
+      "S-Presso": {
+        "mileage": 21.7,
+        "engine": 998.0,
+        "max_power": 67.0,
+        "seats": 5
+      },
+      "Swift": {
+        "mileage": 22.9,
+        "engine": 1248.0,
+        "max_power": 74.0,
+        "seats": 5
+      },
+      "Swift Dzire": {
+        "mileage": 21.21,
+        "engine": 1248.0,
+        "max_power": 74.0,
+        "seats": 5
+      },
+      "Vitara": {
+        "mileage": 24.3,
+        "engine": 1248.0,
+        "max_power": 88.5,
+        "seats": 5
+      },
+      "Wagon R": {
+        "mileage": 20.51,
+        "engine": 998.0,
+        "max_power": 67.0,
+        "seats": 5
+      },
+      "XL6": {
+        "mileage": 19.01,
+        "engine": 1462.0,
+        "max_power": 103.2,
+        "seats": 6
+      }
+    },
+    "Maserati": {
+      "Ghibli": {
+        "mileage": 20.41,
+        "engine": 2987.0,
+        "max_power": 271.0,
+        "seats": 5
+      },
+      "Quattroporte": {
+        "mileage": 19.23,
+        "engine": 2987.0,
+        "max_power": 270.9,
+        "seats": 5
+      }
+    },
+    "Mercedes-AMG": {
+      "C": {
+        "mileage": 11.9,
+        "engine": 2996.0,
+        "max_power": 362.1,
+        "seats": 5
+      }
+    },
+    "Mercedes-Benz": {
+      "C-Class": {
+        "mileage": 14.84,
+        "engine": 2143.0,
+        "max_power": 170.0,
+        "seats": 5
+      },
+      "CLS": {
+        "mileage": 19.4,
+        "engine": 2143.0,
+        "max_power": 204.0,
+        "seats": 4
+      },
+      "E-Class": {
+        "mileage": 13.0,
+        "engine": 2143.0,
+        "max_power": 203.0,
+        "seats": 5
+      },
+      "GL-Class": {
+        "mileage": 11.5,
+        "engine": 2987.0,
+        "max_power": 245.0,
+        "seats": 7
+      },
+      "GLS": {
+        "mileage": 11.0,
+        "engine": 2987.0,
+        "max_power": 258.0,
+        "seats": 7
+      },
+      "S-Class": {
+        "mileage": 13.5,
+        "engine": 2987.0,
+        "max_power": 282.0,
+        "seats": 5
+      }
+    },
+    "Mini": {
+      "Cooper": {
+        "mileage": 17.33,
+        "engine": 1998.0,
+        "max_power": 181.0,
+        "seats": 5
+      }
+    },
+    "Nissan": {
+      "Kicks": {
+        "mileage": 16.81,
+        "engine": 1461.0,
+        "max_power": 108.0,
+        "seats": 5
+      },
+      "X-Trail": {
+        "mileage": 14.42,
+        "engine": 1995.0,
+        "max_power": 147.6,
+        "seats": 5
+      }
+    },
+    "Porsche": {
+      "Cayenne": {
+        "mileage": 14.71,
+        "engine": 2967.0,
+        "max_power": 240.0,
+        "seats": 5
+      },
+      "Macan": {
+        "mileage": 13.6,
+        "engine": 1984.0,
+        "max_power": 250.5,
+        "seats": 5
+      },
+      "Panamera": {
+        "mileage": 7.5,
+        "engine": 4806.0,
+        "max_power": 394.3,
+        "seats": 4
+      }
+    },
+    "Renault": {
+      "Duster": {
+        "mileage": 19.87,
+        "engine": 1461.0,
+        "max_power": 83.8,
+        "seats": 5
+      },
+      "KWID": {
+        "mileage": 24.04,
+        "engine": 999.0,
+        "max_power": 67.0,
+        "seats": 5
+      },
+      "Triber": {
+        "mileage": 20.0,
+        "engine": 999.0,
+        "max_power": 72.0,
+        "seats": 7
+      }
+    },
+    "Rolls-Royce": {
+      "Ghost": {
+        "mileage": 10.2,
+        "engine": 6592.0,
+        "max_power": 563.0,
+        "seats": 4
+      }
+    },
+    "Skoda": {
+      "Octavia": {
+        "mileage": 18.7,
+        "engine": 1896.0,
+        "max_power": 141.0,
+        "seats": 5
+      },
+      "Rapid": {
+        "mileage": 20.5,
+        "engine": 1598.0,
+        "max_power": 103.5,
+        "seats": 5
+      },
+      "Superb": {
+        "mileage": 13.7,
+        "engine": 1798.0,
+        "max_power": 157.8,
+        "seats": 5
+      }
+    },
+    "Tata": {
+      "Altroz": {
+        "mileage": 19.05,
+        "engine": 1199.0,
+        "max_power": 84.8,
+        "seats": 5
+      },
+      "Harrier": {
+        "mileage": 17.0,
+        "engine": 1956.0,
+        "max_power": 138.1,
+        "seats": 5
+      },
+      "Hexa": {
+        "mileage": 17.6,
+        "engine": 2179.0,
+        "max_power": 153.9,
+        "seats": 7
+      },
+      "Nexon": {
+        "mileage": 21.5,
+        "engine": 1497.0,
+        "max_power": 108.5,
+        "seats": 5
+      },
+      "Safari": {
+        "mileage": 14.0,
+        "engine": 2179.0,
+        "max_power": 138.1,
+        "seats": 7
+      },
+      "Tiago": {
+        "mileage": 23.84,
+        "engine": 1199.0,
+        "max_power": 84.0,
+        "seats": 5
+      },
+      "Tigor": {
+        "mileage": 20.3,
+        "engine": 1199.0,
+        "max_power": 84.0,
+        "seats": 5
+      }
+    },
+    "Toyota": {
+      "Camry": {
+        "mileage": 19.16,
+        "engine": 2494.0,
+        "max_power": 164.7,
+        "seats": 5
+      },
+      "Fortuner": {
+        "mileage": 12.55,
+        "engine": 2982.0,
+        "max_power": 171.0,
+        "seats": 7
+      },
+      "Glanza": {
+        "mileage": 21.01,
+        "engine": 1197.0,
+        "max_power": 81.8,
+        "seats": 5
+      },
+      "Innova": {
+        "mileage": 12.99,
+        "engine": 2494.0,
+        "max_power": 102.0,
+        "seats": 7
+      },
+      "Yaris": {
+        "mileage": 17.8,
+        "engine": 1496.0,
+        "max_power": 105.5,
+        "seats": 5
+      }
+    },
+    "Volkswagen": {
+      "Polo": {
+        "mileage": 17.21,
+        "engine": 1199.0,
+        "max_power": 75.0,
+        "seats": 5
+      },
+      "Vento": {
+        "mileage": 20.34,
+        "engine": 1598.0,
+        "max_power": 103.6,
+        "seats": 5
+      }
+    },
+    "Volvo": {
+      "S90": {
+        "mileage": 18.0,
+        "engine": 1969.0,
+        "max_power": 190.0,
+        "seats": 5
+      },
+      "XC": {
+        "mileage": 11.1,
+        "engine": 2400.0,
+        "max_power": 200.0,
+        "seats": 7
+      },
+      "XC60": {
+        "mileage": 14.7,
+        "engine": 1985.0,
+        "max_power": 181.0,
+        "seats": 5
+      },
+      "XC90": {
+        "mileage": 17.2,
+        "engine": 1969.0,
+        "max_power": 235.0,
+        "seats": 7
+      }
+    }
+  },
+  "global_specs": {
+    "mileage": 19.67,
+    "engine": 1248.0,
+    "max_power": 88.5,
+    "seats": 5
   },
   "metrics": {
-    "best_mae": 44520.41,
-    "baseline_mae": 30746.61,
-    "mae_improvement_pct": -44.8,
+    "best_mae": 99948.18,
+    "best_rmse": 308159.42,
+    "best_r2": 0.8739,
+    "baseline_mae": 112063.25,
+    "mae_improvement_pct": 10.81,
     "model_comparison": {
       "BaselineMedian": {
-        "mae": 30746.61,
-        "rmse": 55823.83,
-        "r2": 0.991
+        "mae": 112063.25,
+        "rmse": 337022.62,
+        "r2": 0.8491
       },
       "RandomForest": {
-        "mae": 95599.62,
-        "rmse": 141162.25,
-        "r2": 0.9422
+        "mae": 104624.36,
+        "rmse": 222403.79,
+        "r2": 0.9343
       },
       "GradientBoosting": {
-        "mae": 101564.06,
-        "rmse": 160100.6,
-        "r2": 0.9256
+        "mae": 125556.64,
+        "rmse": 272201.67,
+        "r2": 0.9016
       },
       "XGBoost": {
-        "mae": 44520.41,
-        "rmse": 73652.1,
-        "r2": 0.9843
+        "mae": 99948.18,
+        "rmse": 308159.42,
+        "r2": 0.8739
       }
     },
     "segment_errors": {
-      "Hatchback": {
-        "count": 113,
-        "mae": 13051.52,
-        "mean_price": 355861.95,
-        "mape_pct": 3.91
+      "CNG": {
+        "count": 65,
+        "mae": 37709.94,
+        "mean_price": 423938.46,
+        "mape_pct": 9.16
       },
-      "Luxury": {
-        "count": 112,
-        "mae": 86557.88,
-        "mean_price": 1371550.0,
-        "mape_pct": 7.44
+      "Diesel": {
+        "count": 1475,
+        "mae": 129878.67,
+        "mean_price": 1012951.19,
+        "mape_pct": 13.77
       },
-      "MUV": {
-        "count": 66,
-        "mae": 61213.34,
-        "mean_price": 952640.91,
-        "mape_pct": 5.91
+      "Electric": {
+        "count": 1,
+        "mae": 510763.62,
+        "mean_price": 2000000.0,
+        "mape_pct": 25.54
       },
-      "SUV": {
-        "count": 471,
-        "mae": 39359.91,
-        "mean_price": 708145.65,
-        "mape_pct": 5.55
+      "LPG": {
+        "count": 10,
+        "mae": 29849.83,
+        "mean_price": 187700.0,
+        "mape_pct": 17.48
       },
-      "Sedan": {
-        "count": 124,
-        "mae": 45944.99,
-        "mean_price": 673438.71,
-        "mape_pct": 5.97
+      "Petrol": {
+        "count": 1532,
+        "mae": 73961.34,
+        "mean_price": 586710.75,
+        "mape_pct": 12.04
       }
     },
     "price_band_errors": {
-      "Under \u20b97 Lakh": {
-        "count": 548,
-        "mae": 22329.23,
-        "mape_pct": 5.47
+      "Under \u20b94 Lakh": {
+        "count": 906,
+        "mae": 45220.66,
+        "mape_pct": 16.91
       },
-      "\u20b97 Lakh - \u20b915 Lakh": {
-        "count": 254,
-        "mae": 58449.71,
-        "mape_pct": 5.8
+      "\u20b94 Lakh - \u20b910 Lakh": {
+        "count": 1651,
+        "mae": 66910.01,
+        "mape_pct": 10.65
       },
-      "Above \u20b915 Lakh": {
-        "count": 84,
-        "mae": 147171.86,
-        "mape_pct": 6.51
+      "\u20b910 Lakh - \u20b925 Lakh": {
+        "count": 407,
+        "mae": 186205.57,
+        "mape_pct": 12.33
+      },
+      "Above \u20b925 Lakh": {
+        "count": 119,
+        "mae": 679968.15,
+        "mape_pct": 13.75
       }
     }
   },
