@@ -1,6 +1,8 @@
 """
 CarX Backend Entry Point for Vercel & Production Deployments.
+Exposes 'app' and 'handler' at the module's top level for Vercel Python runtime discovery.
 """
+import os
 import sys
 import types
 from pathlib import Path
@@ -9,10 +11,11 @@ from pathlib import Path
 _backend_dir = Path(__file__).resolve().parent
 _project_root = _backend_dir.parent
 
-for p in [str(_backend_dir), str(_project_root)]:
-    if p not in sys.path:
-        sys.path.insert(0, p)
+for _p in [str(_backend_dir), str(_project_root)]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
+# Ensure virtual 'backend' package exists so 'backend.app.*' imports resolve transparently
 if "backend" not in sys.modules:
     backend_pkg = types.ModuleType("backend")
     backend_pkg.__path__ = [str(_backend_dir)]
@@ -22,29 +25,12 @@ elif not hasattr(sys.modules["backend"], "__path__"):
     sys.modules["backend"].__path__ = [str(_backend_dir)]
 
 try:
-    from backend.app.main import app
-except Exception:
-    try:
-        from app.main import app
-    except Exception as e:
-        import traceback
-        err_trace = traceback.format_exc()
-        import logging
-        logging.error(f"FATAL STARTUP ERROR IN backend/main.py: {err_trace}")
-        from fastapi import FastAPI
-        from fastapi.responses import JSONResponse
+    from backend.app.main import app as _app
+except ImportError:
+    from app.main import app as _app
 
-        app = FastAPI(title="CarX Fallback Diagnostic API")
+# Top-level ASGI application instance for Vercel and ASGI servers
+app = _app
+handler = app
 
-        @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
-        async def fallback(path: str):
-            return JSONResponse(
-                status_code=500,
-                content={
-                    "error": "StartupCrash",
-                    "details": str(e),
-                    "traceback": err_trace,
-                },
-            )
-
-__all__ = ["app"]
+__all__ = ["app", "handler"]
