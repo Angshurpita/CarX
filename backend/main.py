@@ -23,25 +23,28 @@ elif not hasattr(sys.modules["backend"], "__path__"):
 
 try:
     from backend.app.main import app
-except Exception as e:
-    import traceback
-    err_trace = traceback.format_exc()
-    import logging
-    logging.error(f"FATAL STARTUP ERROR IN backend/main.py: {err_trace}")
-    from fastapi import FastAPI
-    from fastapi.responses import JSONResponse
+except Exception:
+    try:
+        from app.main import app
+    except Exception as e:
+        import traceback
+        err_trace = traceback.format_exc()
+        import logging
+        logging.error(f"FATAL STARTUP ERROR IN backend/main.py: {err_trace}")
+        from fastapi import FastAPI
+        from fastapi.responses import JSONResponse
 
-    app = FastAPI(title="CarX Fallback Diagnostic API")
+        app = FastAPI(title="CarX Fallback Diagnostic API")
 
-    @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
-    async def fallback(path: str):
-        return JSONResponse(
-            status_code=500,
-            content={
-                "error": "StartupCrash",
-                "details": str(e),
-                "traceback": err_trace,
-            },
-        )
+        @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
+        async def fallback(path: str):
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "error": "StartupCrash",
+                    "details": str(e),
+                    "traceback": err_trace,
+                },
+            )
 
 __all__ = ["app"]

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-"""CarX Bootstrap & Training Script.
 
 Ensures sample data is ingested, model training is executed on the Cardekho dataset,
 and model artifacts (joblib, lightweight JSON, baseline lookup, metadata) are exported.
@@ -7,8 +5,6 @@ and model artifacts (joblib, lightweight JSON, baseline lookup, metadata) are ex
 import sys
 from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from backend.app.db.session import Base, SessionLocal, engine
 from backend.app.ml.training import train_and_evaluate
