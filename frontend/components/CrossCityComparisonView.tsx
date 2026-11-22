@@ -3,6 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { compareCityDeals, DealCompareResponse } from "../lib/api";
 import { formatINR } from "./ListingCard";
+import {
+  ALL_BRANDS,
+  POPULAR_BRANDS,
+  CAR_MODELS_BY_BRAND,
+  getModelsForBrand,
+} from "../lib/carData";
 
 interface CrossCityComparisonViewProps {
   initialMake?: string;
@@ -87,7 +93,7 @@ export default function CrossCityComparisonView({
           </div>
 
           {/* City and Model controls */}
-          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "flex-end" }}>
             <div>
               <label className="filter-label">Destination (Buyer City)</label>
               <select
@@ -105,6 +111,36 @@ export default function CrossCityComparisonView({
                 <option value="Chennai">Chennai</option>
                 <option value="Pune">Pune</option>
                 <option value="Kolkata">Kolkata</option>
+                <option value="Ahmedabad">Ahmedabad</option>
+                <option value="Jaipur">Jaipur</option>
+                <option value="Chandigarh">Chandigarh</option>
+                <option value="Kochi">Kochi</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="filter-label">Target Make / Brand</label>
+              <select
+                id="compare-make-select"
+                className="filter-select"
+                style={{ width: "190px" }}
+                value={make}
+                onChange={(e) => {
+                  setMake(e.target.value);
+                  setModel("");
+                }}
+              >
+                <option value="">All Brands</option>
+                <optgroup label="Popular Brands">
+                  {POPULAR_BRANDS.map((b) => (
+                    <option key={`pop-${b}`} value={b}>{b}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="All Brands (A-Z)">
+                  {ALL_BRANDS.map((b) => (
+                    <option key={`all-${b}`} value={b}>{b}</option>
+                  ))}
+                </optgroup>
               </select>
             </div>
 
@@ -114,29 +150,37 @@ export default function CrossCityComparisonView({
                 id="target-model-select"
                 className="filter-select"
                 style={{ width: "230px" }}
-                value={make && model ? `${make}|${model}` : ""}
+                value={make && model ? `${make}|${model}` : model ? model : ""}
                 onChange={(e) => {
                   if (!e.target.value) {
-                    setMake("");
                     setModel("");
-                  } else {
+                  } else if (e.target.value.includes("|")) {
                     const [mk, md] = e.target.value.split("|");
                     setMake(mk);
                     setModel(md);
+                  } else {
+                    setModel(e.target.value);
                   }
                 }}
               >
-                <option value="">Select Target Model</option>
-                <option value="Maruti Suzuki|Swift">Maruti Suzuki Swift</option>
-                <option value="Hyundai|Creta">Hyundai Creta</option>
-                <option value="Toyota|Fortuner">Toyota Fortuner</option>
-                <option value="Mahindra|Thar">Mahindra Thar</option>
-                <option value="Tata|Safari">Tata Safari</option>
-                <option value="Mahindra|XUV700">Mahindra XUV700</option>
-                <option value="Honda|City">Honda City</option>
-                <option value="Tata|Nexon">Tata Nexon</option>
-                <option value="BMW|5 Series">BMW 5 Series</option>
-                <option value="Toyota|Innova Crysta">Toyota Innova Crysta</option>
+                <option value="">{make ? `Select ${make} Model` : "Select Target Model"}</option>
+                {make ? (
+                  getModelsForBrand(make).map((m) => (
+                    <option key={m} value={`${make}|${m}`}>
+                      {make} {m}
+                    </option>
+                  ))
+                ) : (
+                  Object.entries(CAR_MODELS_BY_BRAND).map(([brandName, models]) => (
+                    <optgroup key={brandName} label={brandName}>
+                      {models.map((m) => (
+                        <option key={`${brandName}-${m}`} value={`${brandName}|${m}`}>
+                          {brandName} {m}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))
+                )}
               </select>
             </div>
           </div>

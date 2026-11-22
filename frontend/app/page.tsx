@@ -8,6 +8,12 @@ import ValuationCalculator from "../components/ValuationCalculator";
 import CrossCityComparisonView from "../components/CrossCityComparisonView";
 import AssistantChat from "../components/AssistantChat";
 import { fetchCars, fetchMetadata, MetadataFacets, NormalizedListing } from "../lib/api";
+import {
+  ALL_BRANDS,
+  POPULAR_BRANDS,
+  MANUFACTURING_YEARS,
+  getModelsForBrand,
+} from "../lib/carData";
 
 const TOP_METROS = [
   "All India",
@@ -31,6 +37,8 @@ export interface SearchHistoryItem {
   city: string;
   naturalQuery: string;
   make: string;
+  model?: string;
+  year?: string;
   fuel: string;
   transmission: string;
   bodyStyle: string;
@@ -68,6 +76,8 @@ export default function Home() {
   const [selectedCity, setSelectedCity] = useState("");
   const [naturalQuery, setNaturalQuery] = useState("");
   const [selectedMake, setSelectedMake] = useState("");
+  const [selectedModel, setSelectedModel] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
   const [selectedFuel, setSelectedFuel] = useState("");
   const [selectedTrans, setSelectedTrans] = useState("");
   const [selectedBody, setSelectedBody] = useState("");
@@ -118,6 +128,8 @@ export default function Home() {
     city?: string;
     naturalQuery?: string;
     make?: string;
+    model?: string;
+    year?: string;
     fuel?: string;
     transmission?: string;
     bodyStyle?: string;
@@ -126,6 +138,8 @@ export default function Home() {
     const city = entry.city || "";
     const nq = (entry.naturalQuery || "").trim();
     const make = entry.make || "";
+    const model = entry.model || "";
+    const year = entry.year || "";
     const fuel = entry.fuel || "";
     const transmission = entry.transmission || "";
     const bodyStyle = entry.bodyStyle || "";
@@ -137,7 +151,9 @@ export default function Home() {
     } else {
       const parts: string[] = [];
       if (city) parts.push(city);
+      if (year) parts.push(year);
       if (make) parts.push(make);
+      if (model) parts.push(model);
       if (bodyStyle) parts.push(bodyStyle);
       if (fuel) parts.push(fuel);
       if (transmission) parts.push(transmission);
@@ -157,6 +173,8 @@ export default function Home() {
         city,
         naturalQuery: nq,
         make,
+        model,
+        year,
         fuel,
         transmission,
         bodyStyle,
@@ -177,10 +195,13 @@ export default function Home() {
     setLoading(true);
     fetchCars({
       make: selectedMake || undefined,
+      model: selectedModel || undefined,
       city: selectedCity || undefined,
       fuel_type: selectedFuel || undefined,
       transmission: selectedTrans || undefined,
       body_style: selectedBody || undefined,
+      year_min: selectedYear ? Number(selectedYear) : undefined,
+      year_max: selectedYear ? Number(selectedYear) : undefined,
       price_max: maxPrice ? Number(maxPrice) : undefined,
       sort_by: sortBy,
       page,
@@ -200,7 +221,7 @@ export default function Home() {
 
   useEffect(() => {
     loadListings();
-  }, [selectedMake, selectedCity, selectedFuel, selectedTrans, selectedBody, maxPrice, sortBy, page]);
+  }, [selectedMake, selectedModel, selectedYear, selectedCity, selectedFuel, selectedTrans, selectedBody, maxPrice, sortBy, page]);
 
   // Handle City Selection
   const handleCitySelect = (city: string) => {
@@ -312,6 +333,8 @@ export default function Home() {
     setCityInput(item.city);
     setNaturalQuery(item.naturalQuery);
     setSelectedMake(item.make);
+    setSelectedModel(item.model || "");
+    setSelectedYear(item.year || "");
     setSelectedFuel(item.fuel);
     setSelectedTrans(item.transmission);
     setSelectedBody(item.bodyStyle);
@@ -356,6 +379,8 @@ export default function Home() {
 
   const resetFilters = () => {
     setSelectedMake("");
+    setSelectedModel("");
+    setSelectedYear("");
     setSelectedCity("");
     setCityInput("");
     setSelectedFuel("");
@@ -559,13 +584,54 @@ export default function Home() {
                   id="filter-make"
                   className="filter-select"
                   value={selectedMake}
-                  onChange={(e) => { setSelectedMake(e.target.value); setPage(1); }}
+                  onChange={(e) => {
+                    setSelectedMake(e.target.value);
+                    setSelectedModel("");
+                    setPage(1);
+                  }}
                 >
                   <option value="">All Brands</option>
-                  {(metadata?.makes || [
-                    "Maruti Suzuki", "Hyundai", "Tata", "Mahindra", "Toyota", "Kia", "Honda", "Volkswagen", "Skoda", "MG", "Jeep", "BMW", "Mercedes-Benz", "Audi"
-                  ]).map((m) => (
+                  <optgroup label="Popular Brands">
+                    {POPULAR_BRANDS.map((m) => (
+                      <option key={`pop-filter-${m}`} value={m}>{m}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="All Brands (A-Z)">
+                    {ALL_BRANDS.map((m) => (
+                      <option key={`all-filter-${m}`} value={m}>{m}</option>
+                    ))}
+                  </optgroup>
+                </select>
+              </div>
+
+              {/* Model Line Filter */}
+              <div className="filter-group">
+                <label className="filter-label">Model Line</label>
+                <select
+                  id="filter-model"
+                  className="filter-select"
+                  value={selectedModel}
+                  onChange={(e) => { setSelectedModel(e.target.value); setPage(1); }}
+                >
+                  <option value="">{selectedMake ? `All ${selectedMake} Models` : "All Models"}</option>
+                  {(selectedMake ? getModelsForBrand(selectedMake) : []).map((m) => (
                     <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Manufacturing Year Filter */}
+              <div className="filter-group">
+                <label className="filter-label">Manufacturing Year</label>
+                <select
+                  id="filter-year"
+                  className="filter-select"
+                  value={selectedYear}
+                  onChange={(e) => { setSelectedYear(e.target.value); setPage(1); }}
+                >
+                  <option value="">All Years (1997 - 2026)</option>
+                  {MANUFACTURING_YEARS.map((y) => (
+                    <option key={y} value={y}>{y}</option>
                   ))}
                 </select>
               </div>

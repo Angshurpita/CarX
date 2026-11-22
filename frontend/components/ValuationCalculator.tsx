@@ -3,23 +3,12 @@
 import React, { useState } from "react";
 import { estimateFairPrice, ValuationResponse } from "../lib/api";
 import { formatINR } from "./ListingCard";
-
-const MAKE_MODELS_MAP: Record<string, string[]> = {
-  "Toyota": ["Fortuner", "Innova Crysta", "Innova Hycross", "Urban Cruiser Hyryder", "Glanza", "Camry"],
-  "Mahindra": ["Thar", "Scorpio-N", "Scorpio Classic", "XUV700", "XUV300", "Bolero Neo"],
-  "Tata": ["Safari", "Harrier", "Nexon", "Nexon EV", "Punch", "Altroz", "Tiago", "Curvv"],
-  "Hyundai": ["Creta", "Venue", "Verna", "i20", "Exter", "Alcazar", "Tucson"],
-  "Maruti Suzuki": ["Grand Vitara", "Brezza", "Fronx", "Swift", "Baleno", "Dzire", "Ertiga", "XL6", "Jimny", "Ciaz", "WagonR"],
-  "Kia": ["Seltos", "Sonet", "Carens", "Carnival"],
-  "Honda": ["City", "Elevate", "Amaze", "Jazz"],
-  "Volkswagen": ["Virtus", "Taigun", "Polo"],
-  "Skoda": ["Slavia", "Kushaq", "Octavia", "Kodiaq"],
-  "MG": ["Hector", "Astor", "ZS EV"],
-  "Jeep": ["Compass", "Meridian"],
-  "BMW": ["3 Series", "5 Series", "X1"],
-  "Mercedes-Benz": ["C-Class", "E-Class", "GLC"],
-  "Audi": ["A4", "A6", "Q3", "Q5"],
-};
+import {
+  ALL_BRANDS,
+  POPULAR_BRANDS,
+  MANUFACTURING_YEARS,
+  getModelsForBrand,
+} from "../lib/carData";
 
 export default function ValuationCalculator() {
   const [make, setMake] = useState("");
@@ -109,9 +98,16 @@ export default function ValuationCalculator() {
             <label className="filter-label">Make / Manufacturer</label>
             <select id="val-make" className="filter-select" value={make} onChange={(e) => handleMakeChange(e.target.value)} required>
               <option value="">Select Make</option>
-              {Object.keys(MAKE_MODELS_MAP).map((m) => (
-                <option key={m} value={m}>{m}</option>
-              ))}
+              <optgroup label="Popular Brands">
+                {POPULAR_BRANDS.map((m) => (
+                  <option key={`pop-${m}`} value={m}>{m}</option>
+                ))}
+              </optgroup>
+              <optgroup label="All Brands (A-Z)">
+                {ALL_BRANDS.map((m) => (
+                  <option key={`all-${m}`} value={m}>{m}</option>
+                ))}
+              </optgroup>
             </select>
           </div>
 
@@ -119,7 +115,7 @@ export default function ValuationCalculator() {
             <label className="filter-label">Model Line</label>
             <select id="val-model" className="filter-select" value={model} onChange={(e) => setModel(e.target.value)} disabled={!make} required>
               <option value="">{make ? "Select Model" : "Select Make First"}</option>
-              {(MAKE_MODELS_MAP[make] || []).map((m) => (
+              {getModelsForBrand(make).map((m) => (
                 <option key={m} value={m}>{m}</option>
               ))}
             </select>
@@ -132,7 +128,12 @@ export default function ValuationCalculator() {
 
           <div>
             <label className="filter-label">Manufacturing Year</label>
-            <input id="val-year" className="filter-input" type="number" min="2010" max="2026" placeholder="e.g. 2022" value={year} onChange={(e) => setYear(e.target.value ? Number(e.target.value) : "")} required />
+            <select id="val-year" className="filter-select" value={year} onChange={(e) => setYear(e.target.value ? Number(e.target.value) : "")} required>
+              <option value="">Select Year (1997 - 2026)</option>
+              {MANUFACTURING_YEARS.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
           </div>
 
           <div>

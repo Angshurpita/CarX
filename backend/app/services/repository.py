@@ -226,7 +226,16 @@ class ListingRepository:
         if cached_facets is not None:
             return cached_facets
 
-        makes = [m[0] for m in db.query(ListingModel.make).distinct().order_by(ListingModel.make).all() if m[0]]
+        CANONICAL_MAKES = [
+            "Audi", "BMW", "Bentley", "Datsun", "Ferrari", "Force", "Ford", "Honda",
+            "Hyundai", "Isuzu", "Jaguar", "Jeep", "Kia", "Land Rover", "Lexus", "MG",
+            "Mahindra", "Maruti", "Maruti Suzuki", "Maserati", "Mercedes-AMG", "Mercedes-Benz",
+            "Mini", "Nissan", "Porsche", "Renault", "Rolls-Royce", "Skoda", "Tata",
+            "Toyota", "Volkswagen", "Volvo"
+        ]
+        db_makes = [m[0] for m in db.query(ListingModel.make).distinct().order_by(ListingModel.make).all() if m[0]]
+        makes = sorted(list(set(db_makes + CANONICAL_MAKES)))
+
         cities = [c[0] for c in db.query(ListingModel.city).distinct().order_by(ListingModel.city).all() if c[0]]
         body_styles = [b[0] for b in db.query(ListingModel.body_style).distinct().order_by(ListingModel.body_style).all() if b[0]]
         fuel_types = [f[0] for f in db.query(ListingModel.fuel_type).distinct().order_by(ListingModel.fuel_type).all() if f[0]]
@@ -234,8 +243,8 @@ class ListingRepository:
 
         min_price = db.query(func.min(ListingModel.asking_price)).scalar() or 100000.0
         max_price = db.query(func.max(ListingModel.asking_price)).scalar() or 5000000.0
-        min_year = db.query(func.min(ListingModel.year)).scalar() or 2015
-        max_year = db.query(func.max(ListingModel.year)).scalar() or 2024
+        min_year = min(1997, db.query(func.min(ListingModel.year)).scalar() or 1997)
+        max_year = max(2026, db.query(func.max(ListingModel.year)).scalar() or 2026)
 
         facets = {
             "makes": makes,
