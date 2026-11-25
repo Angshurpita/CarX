@@ -393,3 +393,51 @@ export function getModelsForBrand(brand: string): string[] {
   }
   return [];
 }
+
+export interface CarSpecDefaults {
+  mileage: number;
+  engine: number;
+  max_power: number;
+  seats: number;
+}
+
+/**
+ * Returns typical segment mechanical specifications for a brand & model.
+ */
+export function getCarSpecDefaults(brand: string, model: string): CarSpecDefaults {
+  const b = (brand || "").toLowerCase();
+  const m = (model || "").toLowerCase();
+
+  // Hatchbacks & Compacts
+  if (m.includes("alto") || m.includes("kwid") || m.includes("redigo") || m.includes("celerio") || m.includes("eeco") || m.includes("santro")) {
+    return { mileage: 22.7, engine: 796, max_power: 48, seats: 5 };
+  }
+  if (m.includes("swift") || m.includes("baleno") || m.includes("i10") || m.includes("i20") || m.includes("tiago") || m.includes("altroz") || m.includes("polo") || m.includes("glanza") || m.includes("ignis")) {
+    return { mileage: 20.5, engine: 1197, max_power: 83, seats: 5 };
+  }
+
+  // Sedans
+  if (m.includes("city") || m.includes("verna") || m.includes("ciaz") || m.includes("slavia") || m.includes("virtus") || m.includes("dzire") || m.includes("amaze") || m.includes("civic")) {
+    return { mileage: 18.5, engine: 1498, max_power: 115, seats: 5 };
+  }
+
+  // Compact / Mid SUVs
+  if (m.includes("creta") || m.includes("seltos") || m.includes("brezza") || m.includes("nexon") || m.includes("venue") || m.includes("sonet") || m.includes("kushaq") || m.includes("taigun") || m.includes("thar") || m.includes("xuv300") || m.includes("punch")) {
+    return { mileage: 17.0, engine: 1497, max_power: 118, seats: 5 };
+  }
+
+  // Large SUVs & MPVs
+  if (m.includes("fortuner") || m.includes("innova") || m.includes("endeavour") || m.includes("gloster") || m.includes("carnival")) {
+    return { mileage: 13.5, engine: 2755, max_power: 175, seats: 7 };
+  }
+  if (m.includes("xuv700") || m.includes("safari") || m.includes("harrier") || m.includes("scorpio") || m.includes("hector") || m.includes("compass") || m.includes("alcazar")) {
+    return { mileage: 15.2, engine: 2179, max_power: 155, seats: 7 };
+  }
+
+  // Luxury / Premium
+  if (b.includes("bmw") || b.includes("mercedes") || b.includes("audi") || b.includes("jaguar") || b.includes("volvo") || b.includes("porsche") || b.includes("lexus")) {
+    return { mileage: 14.0, engine: 1998, max_power: 190, seats: 5 };
+  }
+
+  return { mileage: 19.5, engine: 1200, max_power: 82, seats: 5 };
+}

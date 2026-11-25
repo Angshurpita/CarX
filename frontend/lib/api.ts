@@ -62,6 +62,18 @@ export interface ValuationRequest {
   owners_count?: number;
   city: string;
   body_style?: string;
+
+  // Exact Cardekho continuous regression feature fields
+  car_name?: string;
+  brand?: string;
+  seller_type?: string;
+  transmission_type?: string;
+  vehicle_age?: number;
+  km_driven?: number;
+  mileage?: number;
+  engine?: number;
+  max_power?: number;
+  seats?: number;
 }
 
 export interface MarketTrendsInfo {

@@ -313,3 +313,26 @@ class ValuationService:
 
         cache.set(cache_key, response, ttl_seconds=3600)
         return response
+
+    @classmethod
+    def predict_car_price(cls, raw_car_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """Inference Pipeline: Price Prediction for Sample Cars.
+
+        Receives raw vehicle attributes, applies data cleaning and transformation steps,
+        and outputs estimated selling prices for sample used cars.
+        """
+        req = ValuationRequest(**raw_car_dict)
+        service = cls.get_instance()
+        val_res = service.estimate(req)
+        return {
+            "car_name": req.car_name,
+            "estimated_selling_price": val_res.estimated_fair_price,
+            "estimated_selling_price_formatted": f"₹{int(val_res.estimated_fair_price):,}",
+            "features_evaluated": map_req_to_cardekho_features(req, service.metadata or service.light_model or {}),
+            "model_used": val_res.prediction_provenance.get("algorithm", "XGBoost Continuous Regressor"),
+            "confidence_score": val_res.confidence_score,
+            "price_range": {
+                "low": val_res.price_range_low,
+                "high": val_res.price_range_high,
+            },
+        }
